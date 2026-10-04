@@ -7,6 +7,7 @@ Targets: Flutter Web + Android + iOS. Backend: Firebase (Auth, Firestore, Storag
 
 ## Stack
 - Flutter (latest stable), Dart null-safety, Riverpod (with code generation), go_router, freezed + json_serializable.
+- Material comes from the `material_ui` package (decoupled from Flutter core since 3.47): import `package:material_ui/material_ui.dart`, never `package:flutter/material.dart`.
 - Cloud Functions in TypeScript (2nd gen), Node 22.
 - Payments: Razorpay (INR). Server verifies everything.
 
