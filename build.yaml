@@ -1,0 +1,10 @@
+# Settings for code generators run by `dart run build_runner build`.
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # Nested freezed models are converted to JSON too (not left as objects).
+          explicit_to_json: true
+          # Firestore documents often miss optional fields; don't write nulls back.
+          include_if_null: false
