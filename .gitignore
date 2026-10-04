@@ -56,3 +56,26 @@ ui-debug.log*
 database-debug.log*
 pubsub-debug.log*
 emulator-data/
+
+# ── Secrets: NEVER commit these ──────────────────────────────────────
+# Environment files (keep a committed .env.example with dummy values)
+.env
+.env.*
+!.env.example
+*.local
+# Google service-account keys / Admin SDK credentials
+service-account*.json
+*-service-account.json
+*firebase-adminsdk*.json
+# Android release signing
+*.jks
+*.keystore
+android/key.properties
+# iOS signing
+*.p12
+*.mobileprovision
+*.p8
+# Razorpay and other private keys
+*.pem
+*.key
+secrets/
