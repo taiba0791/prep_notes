@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "803279888682",
+    "project_id": "prepnotes-635d6",
+    "storage_bucket": "prepnotes-635d6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803279888682:android:777eac35a2e2bb0fd9fe53",
+        "android_client_info": {
+          "package_name": "com.prepnotes.prepnotes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "803279888682-7lk16to87f3rdr2ijpm7fp4lh9ip9s9c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7be-8WQR0Ea0ipIN5cUoVdd4vToQLBq8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "803279888682-7lk16to87f3rdr2ijpm7fp4lh9ip9s9c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
