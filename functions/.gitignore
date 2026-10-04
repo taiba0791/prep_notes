@@ -1,0 +1,15 @@
+# Compiled output
+lib/
+
+# Dependencies
+node_modules/
+
+# Secrets and local env (use `firebase functions:secrets:set` for real secrets)
+.env
+.env.*
+!.env.example
+.secret.local
+*.local
+
+# Logs
+*.log

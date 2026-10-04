@@ -1,0 +1,10 @@
+rules_version = '2';
+
+// Phase 0: deny everything. Each phase opens exactly what it needs.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

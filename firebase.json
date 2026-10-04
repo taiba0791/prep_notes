@@ -1,1 +1,66 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"prepnotes-635d6","appId":"1:803279888682:android:777eac35a2e2bb0fd9fe53","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"prepnotes-635d6","configurations":{"android":"1:803279888682:android:777eac35a2e2bb0fd9fe53","ios":"1:803279888682:ios:9a99889f7db6728fd9fe53","web":"1:803279888682:web:c7efa10fcd597ab9d9fe53"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }],
+    "headers": [
+      {
+        "source": "**/*.@(js|wasm|css|png|jpg|jpeg|svg|otf|ttf|woff|woff2)",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+      },
+      {
+        "source": "/@(index.html|flutter_service_worker.js|flutter_bootstrap.js|version.json)",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs22",
+      "ignore": ["node_modules", ".git", "*.local", "src", "test"],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ],
+  "emulators": {
+    "auth": { "port": 9099 },
+    "functions": { "port": 5001 },
+    "firestore": { "port": 8080 },
+    "storage": { "port": 9199 },
+    "hosting": { "port": 5000 },
+    "ui": { "enabled": true, "port": 4000 },
+    "singleProjectMode": true
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "prepnotes-635d6",
+          "appId": "1:803279888682:android:777eac35a2e2bb0fd9fe53",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "prepnotes-635d6",
+          "configurations": {
+            "android": "1:803279888682:android:777eac35a2e2bb0fd9fe53",
+            "ios": "1:803279888682:ios:9a99889f7db6728fd9fe53",
+            "web": "1:803279888682:web:c7efa10fcd597ab9d9fe53"
+          }
+        }
+      }
+    }
+  }
+}
