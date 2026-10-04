@@ -1,0 +1,54 @@
+/// Every URL in the app. Use these instead of typing paths by hand:
+/// `context.go(RoutePaths.university(id))`.
+abstract final class RoutePaths {
+  // Public pages
+  static const home = '/';
+  static const search = '/search';
+  static const about = '/about';
+  static const contact = '/contact';
+  static const privacy = '/privacy';
+  static const terms = '/terms';
+  static const refundPolicy = '/refund-policy';
+
+  // Auth
+  static const login = '/login';
+  static const register = '/register';
+  static const forgotPassword = '/forgot-password';
+
+  /// Query parameter that remembers where to go back to after login.
+  static const fromParam = 'from';
+
+  // Notes: University → Semester → Subject → Note
+  static const notes = '/notes';
+  static String university(String universityId) => '/notes/u/$universityId';
+  static String semester(String semesterId) => '/notes/s/$semesterId';
+  static String subject(String subjectId) => '/notes/sub/$subjectId';
+  static String note(String noteId) => '/notes/$noteId';
+  static String noteViewer(String noteId) => '/notes/$noteId/view';
+
+  // Purchases & checkout
+  static const purchases = '/purchases';
+  static String checkout(String noteId) => '/checkout/$noteId';
+
+  // Other main sections
+  static const studyZone = '/study-zone';
+  static const studentVoice = '/student-voice';
+  static const resources = '/resources';
+  static const profile = '/profile';
+
+  // Admin panel
+  static const admin = '/admin';
+  static const adminUniversities = '/admin/universities';
+  static const adminSemesters = '/admin/semesters';
+  static const adminSubjects = '/admin/subjects';
+  static const adminModules = '/admin/modules';
+  static const adminNotes = '/admin/notes';
+  static const adminNoteNew = '/admin/notes/new';
+  static String adminNoteEdit(String noteId) => '/admin/notes/$noteId/edit';
+  static const adminUsers = '/admin/users';
+  static String adminUser(String uid) => '/admin/users/$uid';
+  static const adminOrders = '/admin/orders';
+  static String adminOrder(String orderId) => '/admin/orders/$orderId';
+  static const adminResources = '/admin/resources';
+  static const adminStudentVoice = '/admin/student-voice';
+}

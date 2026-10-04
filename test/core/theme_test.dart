@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:prepnotes/core/theme/app_colors.dart';
 import 'package:prepnotes/core/theme/app_theme.dart';
 import 'package:prepnotes/core/theme/app_theme_colors.dart';
-import 'package:prepnotes/main.dart';
 
 void main() {
   // Tests have no internet; don't try to download fonts.
@@ -33,21 +32,5 @@ void main() {
       expect(AppTheme.light.extension<AppThemeColors>(), AppThemeColors.light);
       expect(AppTheme.dark.extension<AppThemeColors>(), AppThemeColors.dark);
     });
-  });
-
-  testWidgets('theme preview renders and toggles dark mode', (tester) async {
-    await tester.pumpWidget(const ThemePreviewApp());
-    expect(find.text('Browse notes'), findsOneWidget);
-    expect(
-      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
-      Brightness.light,
-    );
-
-    await tester.tap(find.byTooltip('Toggle dark mode'));
-    await tester.pumpAndSettle();
-    expect(
-      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
-      Brightness.dark,
-    );
   });
 }

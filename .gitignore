@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated code (re-create with: dart run build_runner build)
+*.g.dart
+*.freezed.dart
