@@ -16,6 +16,7 @@ Targets: Flutter Web + Android + iOS. Backend: Firebase (Auth, Firestore, Storag
 - UI widgets NEVER call Firebase directly. Use repositories exposed via Riverpod providers.
 - Models are immutable (freezed). No business logic in widgets.
 - All Firestore collection/field names live in lib/core/constants/firestore_paths.dart. No magic strings.
+- Money is always an integer in paise (₹49 = 4900) — in Firestore, Dart and Cloud Functions.
 - Every screen must handle: loading, error, empty, and data states.
 - Responsive: mobile (<600), tablet (600–1024), desktop (>1024). Use a shared responsive helper; no hard-coded pixel layouts.
 - Paginate all lists (limit + startAfter). No unbounded Firestore listeners.
