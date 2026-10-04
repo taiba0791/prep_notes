@@ -39,14 +39,14 @@ void main() {
     await tester.pumpWidget(const ThemePreviewApp());
     expect(find.text('Browse notes'), findsOneWidget);
     expect(
-      Theme.of(tester.element(find.byType(Scaffold))).brightness,
+      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
       Brightness.light,
     );
 
     await tester.tap(find.byTooltip('Toggle dark mode'));
     await tester.pumpAndSettle();
     expect(
-      Theme.of(tester.element(find.byType(Scaffold))).brightness,
+      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
       Brightness.dark,
     );
   });

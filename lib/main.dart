@@ -2,7 +2,9 @@
 // Replaced by the real app entry point in Step 0.8.
 import 'package:material_ui/material_ui.dart';
 
+import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/app_scaffold.dart';
 
 void main() => runApp(const ThemePreviewApp());
 
@@ -15,22 +17,32 @@ class ThemePreviewApp extends StatefulWidget {
 
 class _ThemePreviewAppState extends State<ThemePreviewApp> {
   ThemeMode _mode = ThemeMode.light;
+  int _tab = 0;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PrepNotes',
+      title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: _mode,
-      home: ThemePreviewScreen(
-        isDark: _mode == ThemeMode.dark,
-        onToggle: () => setState(
-          () => _mode = _mode == ThemeMode.dark
-              ? ThemeMode.light
-              : ThemeMode.dark,
-        ),
+      home: AppScaffold(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        child: _tab == 0
+            ? ThemePreviewScreen(
+                isDark: _mode == ThemeMode.dark,
+                onToggle: () => setState(
+                  () => _mode = _mode == ThemeMode.dark
+                      ? ThemeMode.light
+                      : ThemeMode.dark,
+                ),
+              )
+            : Scaffold(
+                appBar: AppBar(title: Text(appDestinations[_tab].label)),
+                body: const Center(child: Text(AppStrings.comingSoon)),
+              ),
       ),
     );
   }
@@ -56,7 +68,7 @@ class ThemePreviewScreen extends StatelessWidget {
         title: const Text('PrepNotes · Theme preview'),
         actions: [
           IconButton(
-            tooltip: 'Toggle dark mode',
+            tooltip: AppStrings.toggleDarkMode,
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: onToggle,
           ),
@@ -203,28 +215,6 @@ class ThemePreviewScreen extends StatelessWidget {
           const SizedBox(height: 24),
           const TextField(
             decoration: InputDecoration(labelText: 'Search notes'),
-          ),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            label: 'Notes',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.timer_outlined),
-            label: 'Study',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.folder_outlined),
-            label: 'Resources',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
           ),
         ],
       ),
