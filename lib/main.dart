@@ -92,19 +92,75 @@ class ThemePreviewScreen extends StatelessWidget {
             children: [
               FilledButton(onPressed: () {}, child: const Text('Browse notes')),
               OutlinedButton(onPressed: () {}, child: const Text('Join free')),
-              TextButton(onPressed: () {}, child: const Text('View details →')),
+              ElevatedButton(
+                onPressed: () {},
+                child: const Text('Start studying'),
+              ),
             ],
           ),
           const SizedBox(height: 32),
+          // Teal stats band (like the image's numbers strip).
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.secondary,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (final (value, label) in [
+                    ('12', 'UNIVERSITIES'),
+                    ('480+', 'NOTES'),
+                    ('25 min', 'FOCUS'),
+                  ])
+                    Column(
+                      children: [
+                        Text(
+                          value,
+                          style: text.headlineMedium?.copyWith(
+                            color: scheme.onSecondary,
+                          ),
+                        ),
+                        Text(
+                          label,
+                          style: text.labelSmall?.copyWith(
+                            color: scheme.onSecondary,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: scheme.tertiary,
-                    child: Icon(Icons.menu_book, color: scheme.onTertiary),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: context.appColors.cream,
+                        child: Icon(Icons.menu_book, color: scheme.secondary),
+                      ),
+                      const Spacer(),
+                      // Marigold "pop" badge.
+                      Chip(
+                        label: const Text('FREE'),
+                        backgroundColor: scheme.tertiary,
+                        labelStyle: text.labelMedium?.copyWith(
+                          color: scheme.onTertiary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        side: BorderSide.none,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Text('Data Structures – Module 2', style: text.titleMedium),
@@ -114,7 +170,32 @@ class ThemePreviewScreen extends StatelessWidget {
                     style: text.bodyMedium,
                   ),
                   const SizedBox(height: 12),
-                  const Chip(label: Text('Semester 3')),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      Chip(
+                        label: const Text('Semester 3'),
+                        backgroundColor: scheme.secondaryContainer,
+                        labelStyle: text.labelLarge?.copyWith(
+                          color: scheme.onSecondaryContainer,
+                        ),
+                        side: BorderSide.none,
+                      ),
+                      Chip(
+                        label: const Text('New'),
+                        backgroundColor: scheme.primaryContainer,
+                        labelStyle: text.labelLarge?.copyWith(
+                          color: scheme.onPrimaryContainer,
+                        ),
+                        side: BorderSide.none,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text('View notes →'),
+                  ),
                 ],
               ),
             ),

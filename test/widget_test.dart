@@ -14,17 +14,19 @@ void main() {
     test('light theme uses the brand palette', () {
       final scheme = AppTheme.light.colorScheme;
       expect(scheme.brightness, Brightness.light);
-      expect(scheme.primary, AppColors.petrol);
-      expect(scheme.secondary, AppColors.coral);
-      expect(scheme.tertiary, AppColors.sand);
+      expect(scheme.primary, AppColors.claret);
+      expect(scheme.secondary, AppColors.teal);
+      expect(scheme.tertiary, AppColors.marigold);
+      expect(scheme.onSurface, AppColors.ink);
       expect(scheme.surface, AppColors.white);
     });
 
-    test('dark theme uses petrol surfaces and coral accent', () {
+    test('dark theme uses ink surfaces and lighter brand tones', () {
       final scheme = AppTheme.dark.colorScheme;
       expect(scheme.brightness, Brightness.dark);
-      expect(scheme.surface, AppColors.petrolDeep);
-      expect(scheme.secondary, AppColors.coral);
+      expect(scheme.surface, AppColors.darkSurface);
+      expect(scheme.primary, AppColors.rose);
+      expect(scheme.secondary, AppColors.tealLight);
     });
 
     test('both themes include the AppThemeColors extension', () {

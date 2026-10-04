@@ -28,7 +28,7 @@ abstract final class AppTextStyles {
           titleMedium: sans.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           labelLarge: sans.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         )
-        // Headings and labels in the main text colour (petrol / near-white)...
+        // Headings and labels in the main text colour (ink / near-white)...
         .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface)
         // ...paragraph text in the softer, muted colour.
         .copyWith(

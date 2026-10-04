@@ -11,6 +11,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   const AppThemeColors({
     required this.link,
     required this.highlight,
+    required this.cream,
     required this.success,
     required this.warning,
   });
@@ -18,8 +19,11 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   /// Text links such as "View program →".
   final Color link;
 
-  /// The coral italic word in headings ("From Campus to a Top-Tech *Offer*").
+  /// The italic accent word in headings ("From Campus to a Top-Tech *Offer*").
   final Color highlight;
+
+  /// Warm background for illustrations, hero shapes and icon circles.
+  final Color cream;
 
   /// Positive states, e.g. "Purchased", "Resolved".
   final Color success;
@@ -28,15 +32,17 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color warning;
 
   static const light = AppThemeColors(
-    link: AppColors.coralDeep,
-    highlight: AppColors.coralDeep,
+    link: AppColors.claret,
+    highlight: AppColors.claret,
+    cream: AppColors.cream,
     success: AppColors.success,
     warning: AppColors.warning,
   );
 
   static const dark = AppThemeColors(
-    link: AppColors.coral,
-    highlight: AppColors.coral,
+    link: AppColors.rose,
+    highlight: AppColors.rose,
+    cream: AppColors.darkCream,
     success: AppColors.successLight,
     warning: AppColors.warningLight,
   );
@@ -45,12 +51,14 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   AppThemeColors copyWith({
     Color? link,
     Color? highlight,
+    Color? cream,
     Color? success,
     Color? warning,
   }) {
     return AppThemeColors(
       link: link ?? this.link,
       highlight: highlight ?? this.highlight,
+      cream: cream ?? this.cream,
       success: success ?? this.success,
       warning: warning ?? this.warning,
     );
@@ -62,6 +70,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     return AppThemeColors(
       link: Color.lerp(link, other.link, t)!,
       highlight: Color.lerp(highlight, other.highlight, t)!,
+      cream: Color.lerp(cream, other.cream, t)!,
       success: Color.lerp(success, other.success, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
     );

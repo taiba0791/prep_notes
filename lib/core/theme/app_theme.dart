@@ -6,10 +6,16 @@ import 'app_theme_colors.dart';
 
 /// Central Material 3 theme for PrepNotes (light + dark).
 ///
+/// Colour roles ("Claret and teal" + marigold pop):
+/// - primary   = Claret   → main actions, links, selected nav item.
+/// - secondary = Teal     → info bands, chips, Study Zone, progress.
+/// - tertiary  = Marigold → small pops only: "Free"/"New" badges, streaks.
+///
 /// Button roles:
-/// - [FilledButton]   → main call-to-action (coral pill, e.g. "Buy now").
-/// - [OutlinedButton] → secondary action (petrol outline pill).
-/// - [TextButton]     → link-style action (deep coral text).
+/// - [FilledButton]   → main call-to-action (claret pill, e.g. "Buy now").
+/// - [OutlinedButton] → secondary action (ink outline pill).
+/// - [TextButton]     → link-style action (claret text).
+/// - [ElevatedButton] → alternative action (teal pill).
 abstract final class AppTheme {
   static const double radiusSmall = 8;
   static const double radiusMedium = 12;
@@ -20,72 +26,72 @@ abstract final class AppTheme {
   static ThemeData get dark => _build(_darkScheme, AppThemeColors.dark);
 
   static final ColorScheme _lightScheme =
-      ColorScheme.fromSeed(seedColor: AppColors.petrol).copyWith(
-        primary: AppColors.petrol,
+      ColorScheme.fromSeed(seedColor: AppColors.claret).copyWith(
+        primary: AppColors.claret,
         onPrimary: AppColors.white,
-        primaryContainer: AppColors.petrolContainer,
-        onPrimaryContainer: AppColors.petrol,
-        secondary: AppColors.coral,
-        onSecondary: AppColors.petrol,
-        secondaryContainer: AppColors.coralContainer,
-        onSecondaryContainer: AppColors.onCoralContainer,
-        tertiary: AppColors.sand,
-        onTertiary: AppColors.petrol,
-        tertiaryContainer: AppColors.sandLight,
-        onTertiaryContainer: AppColors.petrol,
+        primaryContainer: AppColors.blush,
+        onPrimaryContainer: AppColors.onBlush,
+        secondary: AppColors.teal,
+        onSecondary: AppColors.white,
+        secondaryContainer: AppColors.mint,
+        onSecondaryContainer: AppColors.onMint,
+        tertiary: AppColors.marigold,
+        onTertiary: AppColors.ink,
+        tertiaryContainer: AppColors.marigoldLight,
+        onTertiaryContainer: AppColors.onMarigoldLight,
         surface: AppColors.white,
-        onSurface: AppColors.petrol,
-        onSurfaceVariant: AppColors.slate,
+        onSurface: AppColors.ink,
+        onSurfaceVariant: AppColors.warmGrey,
         surfaceContainerLowest: AppColors.white,
-        surfaceContainerLow: AppColors.white,
-        surfaceContainer: AppColors.surfaceDim,
-        surfaceContainerHigh: AppColors.surfaceDim,
-        surfaceContainerHighest: AppColors.surfaceDimmer,
+        surfaceContainerLow: AppColors.surfaceLow,
+        surfaceContainer: AppColors.surfaceMid,
+        surfaceContainerHigh: AppColors.surfaceHigh,
+        surfaceContainerHighest: AppColors.cream,
         outline: AppColors.outline,
         outlineVariant: AppColors.border,
-        inverseSurface: AppColors.petrol,
+        inverseSurface: AppColors.ink,
         onInverseSurface: AppColors.white,
-        inversePrimary: AppColors.petrolTint,
+        inversePrimary: AppColors.rose,
         surfaceTint: Colors.transparent,
       );
 
   static final ColorScheme _darkScheme =
       ColorScheme.fromSeed(
-        seedColor: AppColors.petrol,
+        seedColor: AppColors.claret,
         brightness: Brightness.dark,
       ).copyWith(
-        primary: AppColors.petrolTint,
-        onPrimary: AppColors.petrolDeep,
-        primaryContainer: AppColors.petrolContainerDark,
-        onPrimaryContainer: AppColors.petrolContainer,
-        secondary: AppColors.coral,
-        onSecondary: AppColors.petrolDeep,
-        secondaryContainer: AppColors.coralContainerDark,
-        onSecondaryContainer: AppColors.onCoralContainerDark,
-        tertiary: AppColors.sand,
-        onTertiary: AppColors.petrolDeep,
-        tertiaryContainer: AppColors.sandContainerDark,
-        onTertiaryContainer: AppColors.sandLight,
-        surface: AppColors.petrolDeep,
+        primary: AppColors.rose,
+        onPrimary: AppColors.onRose,
+        primaryContainer: AppColors.claretContainerDark,
+        onPrimaryContainer: AppColors.onClaretContainerDark,
+        secondary: AppColors.tealLight,
+        onSecondary: AppColors.onTealLight,
+        secondaryContainer: AppColors.tealContainerDark,
+        onSecondaryContainer: AppColors.onTealContainerDark,
+        tertiary: AppColors.marigoldSoft,
+        onTertiary: AppColors.onMarigoldSoft,
+        tertiaryContainer: AppColors.marigoldContainerDark,
+        onTertiaryContainer: AppColors.onMarigoldContainerDark,
+        surface: AppColors.darkSurface,
         onSurface: AppColors.darkText,
         onSurfaceVariant: AppColors.darkTextMuted,
         surfaceContainerLowest: AppColors.darkSurfaceLowest,
         surfaceContainerLow: AppColors.darkSurfaceLow,
-        surfaceContainer: AppColors.petrol,
+        surfaceContainer: AppColors.darkSurfaceMid,
         surfaceContainerHigh: AppColors.darkSurfaceHigh,
         surfaceContainerHighest: AppColors.darkSurfaceHighest,
         outline: AppColors.darkOutline,
         outlineVariant: AppColors.darkBorder,
         inverseSurface: AppColors.darkText,
-        onInverseSurface: AppColors.petrolDeep,
-        inversePrimary: AppColors.petrol,
+        onInverseSurface: AppColors.ink,
+        inversePrimary: AppColors.claret,
         surfaceTint: Colors.transparent,
       );
 
   static ThemeData _build(ColorScheme scheme, AppThemeColors extra) {
     final textTheme = AppTextStyles.textTheme(scheme);
     final isLight = scheme.brightness == Brightness.light;
-    // Cards: white on a white page (light) / raised petrol (dark).
+    // Cards: white on a white page (light) / raised ink (dark).
     final cardColor = isLight
         ? scheme.surfaceContainerLowest
         : scheme.surfaceContainer;
@@ -109,8 +115,8 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: scheme.secondary,
-          foregroundColor: scheme.onSecondary,
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
           padding: buttonPadding,
           shape: pill,
           textStyle: textTheme.labelLarge,
@@ -134,8 +140,8 @@ abstract final class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: scheme.primary,
-          foregroundColor: scheme.onPrimary,
+          backgroundColor: scheme.secondary,
+          foregroundColor: scheme.onSecondary,
           elevation: 0,
           padding: buttonPadding,
           shape: pill,
@@ -143,8 +149,8 @@ abstract final class AppTheme {
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: scheme.secondary,
-        foregroundColor: scheme.onSecondary,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
         shape: pill,
       ),
       cardTheme: CardThemeData(
@@ -186,21 +192,21 @@ abstract final class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surface,
-        indicatorColor: scheme.tertiaryContainer,
+        indicatorColor: scheme.primaryContainer,
         elevation: 0,
         labelTextStyle: WidgetStatePropertyAll(textTheme.labelMedium),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? scheme.onTertiaryContainer
+                ? scheme.onPrimaryContainer
                 : scheme.onSurfaceVariant,
           ),
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: scheme.surface,
-        indicatorColor: scheme.tertiaryContainer,
-        selectedIconTheme: IconThemeData(color: scheme.onTertiaryContainer),
+        indicatorColor: scheme.primaryContainer,
+        selectedIconTheme: IconThemeData(color: scheme.onPrimaryContainer),
         unselectedIconTheme: IconThemeData(color: scheme.onSurfaceVariant),
         selectedLabelTextStyle: textTheme.labelLarge,
         unselectedLabelTextStyle: textTheme.labelLarge?.copyWith(
