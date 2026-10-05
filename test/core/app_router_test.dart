@@ -1,3 +1,4 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:prepnotes/app.dart';
 import 'package:prepnotes/core/constants/app_strings.dart';
 import 'package:prepnotes/core/router/app_router.dart';
 import 'package:prepnotes/core/router/route_paths.dart';
+import 'package:prepnotes/data/repositories/user_repository.dart';
 import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_session.dart';
 
@@ -25,7 +27,12 @@ void main() {
   Future<void> pumpApp(WidgetTester tester) async {
     auth = FakeAuthRepository();
     container = ProviderContainer(
-      overrides: [authRepositoryProvider.overrideWithValue(auth)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        userRepositoryProvider.overrideWithValue(
+          FirestoreUserRepository(FakeFirebaseFirestore()),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     router = container.read(appRouterProvider);

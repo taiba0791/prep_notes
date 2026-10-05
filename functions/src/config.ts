@@ -11,6 +11,14 @@ if (getApps().length === 0) initializeApp();
 // is ever flooded with requests.
 setGlobalOptions({ region: "asia-south1", maxInstances: 10 });
 
+/**
+ * OWNER accounts: become admin automatically after signing in, as long as
+ * Google has VERIFIED the email (Google sign-in is verified immediately;
+ * email/password needs the verification link clicked first).
+ * Lower-case. Server-side only — the app can't see or change this list.
+ */
+export const OWNER_EMAILS: readonly string[] = ["prep.notes247@gmail.com"];
+
 /** Firestore collection / field names (mirror lib/core/constants/firestore_paths.dart). */
 export const Collections = {
   users: "users",
@@ -18,6 +26,7 @@ export const Collections = {
 
 export const UserFields = {
   role: "role",
+  email: "email",
 } as const;
 
 export const UserRole = {

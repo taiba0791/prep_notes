@@ -6,6 +6,7 @@ import 'core/constants/app_strings.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
+import 'features/auth/data/current_user_providers.dart';
 
 /// Root widget: theme + router.
 class PrepNotesApp extends ConsumerWidget {
@@ -13,6 +14,9 @@ class PrepNotesApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Picks up admin rights granted/removed on the server without a restart.
+    ref.watch(adminClaimSyncProvider);
+
     return MaterialApp.router(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
