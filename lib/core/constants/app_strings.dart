@@ -80,4 +80,58 @@ abstract final class AppStrings {
 
   // Account
   static const signOut = 'Log out';
+
+  // Form validation
+  static const validationEmailRequired = 'Please enter your email.';
+  static const validationEmailInvalid = 'Please enter a valid email address.';
+  static const validationPasswordRequired = 'Please enter your password.';
+  static const validationPasswordShort =
+      'Password must be at least 8 characters.';
+  static const validationPasswordWeak =
+      'Use at least one letter and one number.';
+  static const validationPasswordMismatch = "Passwords don't match.";
+  static const validationNameRequired = 'Please enter your name.';
+  static const validationNameShort = 'Name must be at least 2 characters.';
+  static const validationNameLong = 'Name must be at most 60 characters.';
+
+  // Auth screens — shared
+  static const fieldEmail = 'Email';
+  static const fieldPassword = 'Password';
+  static const fieldNewPassword = 'Create a password';
+  static const fieldConfirmPassword = 'Confirm password';
+  static const fieldName = 'Full name';
+  static const showPassword = 'Show password';
+  static const hidePassword = 'Hide password';
+  static const passwordHint =
+      'At least 8 characters, with a letter and a number';
+
+  // Login
+  static const loginTitle = 'Welcome back';
+  static const loginSubtitle = 'Log in to access your notes and purchases.';
+  static const loginButton = 'Log in';
+  static const forgotPasswordLink = 'Forgot password?';
+  static const noAccountPrompt = "Don't have an account?";
+  static const createAccountLink = 'Create one';
+
+  // Register
+  static const registerTitle = 'Create your account';
+  static const registerSubtitle = 'Free to join. Buy only the notes you need.';
+  static const registerButton = 'Create account';
+  static const haveAccountPrompt = 'Already have an account?';
+  static const loginLink = 'Log in';
+  static const termsPrefix = 'By creating an account you agree to our ';
+  static const termsLink = 'Terms';
+  static const termsAnd = ' and ';
+  static const privacyLink = 'Privacy Policy';
+
+  // Forgot password
+  static const forgotTitle = 'Reset your password';
+  static const forgotSubtitle =
+      "Enter your account email and we'll send you a reset link.";
+  static const forgotButton = 'Send reset link';
+  static const forgotSentTitle = 'Check your inbox';
+  static const forgotSentMessage =
+      "If an account exists for that email, we've sent a link to reset your "
+      'password. It may take a minute — check your spam folder too.';
+  static const backToLogin = 'Back to log in';
 }

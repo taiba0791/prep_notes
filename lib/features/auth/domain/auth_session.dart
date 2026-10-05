@@ -27,3 +27,7 @@ abstract class AuthSession with _$AuthSession {
 
   bool get isSignedIn => uid != null;
 }
+
+/// The account returned right after sign-in / sign-up.
+/// `email` is Firebase's stored version (what security rules compare with).
+typedef AuthUser = ({String uid, String? email, String? displayName});

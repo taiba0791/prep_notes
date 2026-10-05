@@ -18,8 +18,8 @@ abstract interface class UserRepository {
   Stream<UserProfile?> watchProfile(String uid);
 
   /// Creates the profile right after sign-up / first Google sign-in.
-  /// Does nothing if it already exists.
-  Future<void> createProfileIfMissing({
+  /// Does nothing if it already exists. Returns true if it was created.
+  Future<bool> createProfileIfMissing({
     required String uid,
     required String name,
     required String email,
@@ -62,14 +62,14 @@ class FirestoreUserRepository implements UserRepository {
       _doc(uid).snapshots().map(_fromSnapshot);
 
   @override
-  Future<void> createProfileIfMissing({
+  Future<bool> createProfileIfMissing({
     required String uid,
     required String name,
     required String email,
     String? photoUrl,
   }) async {
     final ref = _doc(uid);
-    if ((await ref.get()).exists) return;
+    if ((await ref.get()).exists) return false;
 
     final data = UserProfile(
       name: name.trim(),
@@ -80,6 +80,7 @@ class FirestoreUserRepository implements UserRepository {
     data[UserFields.createdAt] = FieldValue.serverTimestamp();
     data[UserFields.lastLoginAt] = FieldValue.serverTimestamp();
     await ref.set(data);
+    return true;
   }
 
   @override

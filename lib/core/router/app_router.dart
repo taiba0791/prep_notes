@@ -6,6 +6,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/auth_session.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../constants/app_strings.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/not_found_screen.dart';
@@ -123,9 +126,18 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // Auth (full screen, no navigation)
-      _page(RoutePaths.login, AppStrings.pageLogin),
-      _page(RoutePaths.register, AppStrings.pageRegister),
-      _page(RoutePaths.forgotPassword, AppStrings.pageForgotPassword),
+      GoRoute(
+        path: RoutePaths.login,
+        builder: (context, state) => LoginScreen(from: _from(state)),
+      ),
+      GoRoute(
+        path: RoutePaths.register,
+        builder: (context, state) => RegisterScreen(from: _from(state)),
+      ),
+      GoRoute(
+        path: RoutePaths.forgotPassword,
+        builder: (context, state) => ForgotPasswordScreen(from: _from(state)),
+      ),
 
       // Checkout (full screen)
       _page('/checkout/:noteId', AppStrings.pageCheckout),
@@ -168,6 +180,9 @@ GoRouter appRouter(Ref ref) {
   ref.onDispose(router.dispose);
   return router;
 }
+
+String? _from(GoRouterState state) =>
+    state.uri.queryParameters[RoutePaths.fromParam];
 
 /// A route that shows a [PlaceholderScreen] with its URL parameters.
 /// Each phase swaps these for real screens.

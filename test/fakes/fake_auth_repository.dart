@@ -13,6 +13,15 @@ class FakeAuthRepository implements AuthRepository {
   AuthSession _session;
   final calls = <String>[];
 
+  /// If set, the next action throws this (then it is cleared).
+  Object? nextError;
+
+  void _maybeThrow() {
+    final e = nextError;
+    nextError = null;
+    if (e != null) throw e;
+  }
+
   AuthSession get session => _session;
 
   void emit(AuthSession session) {
@@ -27,20 +36,26 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<String> register({
+  Future<AuthUser> register({
     required String name,
     required String email,
     required String password,
   }) async {
     calls.add('register:$email');
+    _maybeThrow();
     emit(AuthSession(uid: 'new-uid', email: email));
-    return 'new-uid';
+    return (uid: 'new-uid', email: email, displayName: name);
   }
 
   @override
-  Future<void> signIn({required String email, required String password}) async {
+  Future<AuthUser> signIn({
+    required String email,
+    required String password,
+  }) async {
     calls.add('signIn:$email');
+    _maybeThrow();
     emit(AuthSession(uid: 'uid-$email', email: email, emailVerified: true));
+    return (uid: 'uid-$email', email: email, displayName: null);
   }
 
   @override
@@ -50,8 +65,10 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> sendPasswordReset(String email) async =>
-      calls.add('reset:$email');
+  Future<void> sendPasswordReset(String email) async {
+    calls.add('reset:$email');
+    _maybeThrow();
+  }
 
   @override
   Future<void> sendEmailVerification() async => calls.add('verify');

@@ -81,7 +81,7 @@ void main() {
     await pumpApp(tester);
     await go(tester, RoutePaths.profile);
     expect(location(), '/login?from=%2Fprofile');
-    expect(pageTitle(AppStrings.pageLogin), findsOneWidget);
+    expect(find.text(AppStrings.loginTitle), findsOneWidget);
 
     auth.emit(student);
     await tester.pumpAndSettle();

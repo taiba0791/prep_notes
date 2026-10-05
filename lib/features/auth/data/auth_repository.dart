@@ -13,14 +13,14 @@ abstract interface class AuthRepository {
   /// Emits on sign-in, sign-out and token refresh (e.g. new admin claim).
   Stream<AuthSession> sessionChanges();
 
-  /// Creates the account and sets its display name. Returns the new uid.
-  Future<String> register({
+  /// Creates the account and sets its display name.
+  Future<AuthUser> register({
     required String name,
     required String email,
     required String password,
   });
 
-  Future<void> signIn({required String email, required String password});
+  Future<AuthUser> signIn({required String email, required String password});
 
   Future<void> signOut();
 
@@ -55,7 +55,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<String> register({
+  Future<AuthUser> register({
     required String name,
     required String email,
     required String password,
@@ -66,17 +66,21 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     final user = cred.user!;
     await user.updateDisplayName(name.trim());
-    return user.uid;
+    return (uid: user.uid, email: user.email, displayName: name.trim());
   });
 
   @override
-  Future<void> signIn({required String email, required String password}) =>
-      _guard(
-        () => _auth.signInWithEmailAndPassword(
+  Future<AuthUser> signIn({required String email, required String password}) =>
+      _guard(() async {
+        final cred = await _auth.signInWithEmailAndPassword(
           email: email.trim(),
           password: password,
-        ),
-      );
+        );
+        return _toAuthUser(cred.user!);
+      });
+
+  AuthUser _toAuthUser(User user) =>
+      (uid: user.uid, email: user.email, displayName: user.displayName);
 
   @override
   Future<void> signOut() => _guard(_auth.signOut);

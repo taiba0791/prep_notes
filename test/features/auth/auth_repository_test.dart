@@ -46,12 +46,13 @@ void main() {
 
   test('register creates the account and sets the display name', () async {
     final auth = MockFirebaseAuth();
-    final uid = await FirebaseAuthRepository(auth).register(
+    final user = await FirebaseAuthRepository(auth).register(
       name: '  Taiba Shaikh ',
       email: ' taiba@x.com ',
       password: 'secret123',
     );
-    expect(uid, isNotEmpty);
+    expect(user.uid, isNotEmpty);
+    expect(user.displayName, 'Taiba Shaikh');
     expect(auth.currentUser!.displayName, 'Taiba Shaikh');
   });
 
