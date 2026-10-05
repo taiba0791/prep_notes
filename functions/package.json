@@ -17,11 +17,13 @@
     "test:functions": "vitest run test/functions",
     "functions:test": "firebase emulators:exec --config ../firebase.test.json --only auth,firestore,storage \"npm run test:functions\"",
     "test:all": "firebase emulators:exec --config ../firebase.test.json --only auth,firestore,storage \"vitest run\"",
-    "bootstrap-admin": "tsx scripts/bootstrap_admin.ts"
+    "bootstrap-admin": "tsx scripts/bootstrap_admin.ts",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "firebase-admin": "^14.5.0",
-    "firebase-functions": "^7.4.0"
+    "firebase-functions": "^7.4.0",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

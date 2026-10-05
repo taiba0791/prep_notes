@@ -15,7 +15,7 @@ service cloud.firestore {
 
     // Admin = custom claim set ONLY by a Cloud Function (setAdminClaim).
     function isAdmin() {
-      return signedIn() && request.auth.token.admin == true;
+      return signedIn() && request.auth.token.get('admin', false) == true;
     }
 
     function isOwner(uid) {
@@ -88,11 +88,116 @@ service cloud.firestore {
     }
 
     // ───────────────────────── catalog ─────────────────────────
+    // University → Semester → Subject → Module: anyone can read (it's the
+    // public catalog); only admins write, with field checks.
 
-    // Public catalog data (profile dropdown, browsing). Admin writes: Phase 2.
+    function isText(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    function optionalText(d, field, max) {
+      return !(field in d) || isText(d[field], 0, max);
+    }
+
     match /universities/{universityId} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+             'name', 'shortName', 'city', 'logoUrl', 'description', 'isActive', 'order'])
+        && isText(request.resource.data.name, 2, 120)
+        && optionalText(request.resource.data, 'shortName', 20)
+        && optionalText(request.resource.data, 'city', 80)
+        && optionalText(request.resource.data, 'logoUrl', 1024)
+        && optionalText(request.resource.data, 'description', 1000)
+        && request.resource.data.isActive is bool
+        && request.resource.data.order is int;
+      allow delete: if isAdmin();
+    }
+
+    match /semesters/{semesterId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['universityId', 'number', 'name', 'isActive'])
+        && isText(request.resource.data.universityId, 1, 128)
+        && request.resource.data.number is int
+        && request.resource.data.number >= 1 && request.resource.data.number <= 12
+        && isText(request.resource.data.name, 1, 60)
+        && request.resource.data.isActive is bool;
+      allow delete: if isAdmin();
+    }
+
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+             'universityId', 'semesterId', 'name', 'code', 'description', 'isActive'])
+        && isText(request.resource.data.universityId, 1, 128)
+        && isText(request.resource.data.semesterId, 1, 128)
+        && isText(request.resource.data.name, 2, 120)
+        && optionalText(request.resource.data, 'code', 30)
+        && optionalText(request.resource.data, 'description', 1000)
+        && request.resource.data.isActive is bool;
+      allow delete: if isAdmin();
+    }
+
+    match /modules/{moduleId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['subjectId', 'number', 'title', 'isActive'])
+        && isText(request.resource.data.subjectId, 1, 128)
+        && request.resource.data.number is int
+        && request.resource.data.number >= 1 && request.resource.data.number <= 50
+        && isText(request.resource.data.title, 1, 160)
+        && request.resource.data.isActive is bool;
+      allow delete: if isAdmin();
+    }
+
+    // ───────────────────────── notes ─────────────────────────
+    // Students see only PUBLISHED notes (their queries must filter on
+    // isPublished == true). Admins see and write everything.
+    // pageCount / fileSizeBytes / hasPreview / purchaseCount are written only
+    // by Cloud Functions; admins can't change them from the app.
+
+    match /notes/{noteId} {
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow create: if isAdmin()
+        && isValidNote(request.resource.data)
+        && request.resource.data.pageCount == 0
+        && request.resource.data.fileSizeBytes == 0
+        && request.resource.data.hasPreview == false
+        && request.resource.data.purchaseCount == 0
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidNote(request.resource.data)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+             'pageCount', 'fileSizeBytes', 'hasPreview', 'purchaseCount', 'createdAt'])
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+
+      function isValidNote(d) {
+        return d.keys().hasOnly([
+            'title', 'description', 'universityId', 'semesterId', 'subjectId', 'moduleId',
+            'universityName', 'semesterNumber', 'subjectName', 'moduleTitle',
+            'price', 'isFree', 'thumbnailUrl', 'pageCount', 'fileSizeBytes',
+            'storagePath', 'previewPages', 'hasPreview', 'isPublished', 'purchaseCount',
+            'tags', 'searchKeywords', 'createdAt', 'updatedAt'])
+          && isText(d.title, 3, 200)
+          && optionalText(d, 'description', 5000)
+          && isText(d.universityId, 1, 128) && isText(d.semesterId, 1, 128)
+          && isText(d.subjectId, 1, 128) && isText(d.moduleId, 1, 128)
+          // Money in paise: whole number, ₹0 – ₹1,00,000.
+          && d.price is int && d.price >= 0 && d.price <= 10000000
+          && d.isFree is bool
+          && (d.isFree || d.price > 0)
+          && d.previewPages is int && d.previewPages >= 0 && d.previewPages <= 30
+          && d.isPublished is bool
+          // Can't publish without a PDF.
+          && (!d.isPublished || ('storagePath' in d && d.storagePath == 'notes_private/' + noteId + '/file.pdf'))
+          && optionalText(d, 'thumbnailUrl', 1024)
+          && d.tags is list && d.tags.size() <= 20
+          && d.searchKeywords is list && d.searchKeywords.size() <= 300;
+      }
     }
   }
 }

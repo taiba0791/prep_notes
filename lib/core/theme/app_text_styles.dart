@@ -1,7 +1,7 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Typography: a serif for big headings (Source Serif 4) and a clean sans
+/// Typography: a serif for big headings (Fraunces) and a clean sans
 /// for everything else (Inter).
 abstract final class AppTextStyles {
   static TextTheme textTheme(ColorScheme scheme) {
@@ -9,10 +9,7 @@ abstract final class AppTextStyles {
 
     TextStyle? serif(TextStyle? style) => style == null
         ? null
-        : GoogleFonts.sourceSerif4(
-            textStyle: style,
-            fontWeight: FontWeight.w400,
-          );
+        : GoogleFonts.fraunces(textStyle: style, fontWeight: FontWeight.w400);
 
     final sans = GoogleFonts.interTextTheme(base);
 

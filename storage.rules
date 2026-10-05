@@ -10,6 +10,16 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    // Admin = custom claim set ONLY by a Cloud Function.
+    function isAdmin() {
+      return signedIn() && request.auth.token.get('admin', false) == true;
+    }
+
+    function isImageUnder(maxBytes) {
+      return request.resource.size < maxBytes
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
     // ── avatars/{uid}/avatar.jpg — public read, owner write ──
     match /avatars/{uid}/{fileName} {
       allow read: if true;
@@ -21,7 +31,39 @@ service firebase.storage {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
-    // notes_private/**  → NO client access ever (signed URLs via a Function).
-    // notes_public/**, resources/** → opened in Phases 2 and 6.
+    // ── notes_private/{noteId}/file.pdf — the paid PDFs ──
+    // NOBODY can read these from an app, not even admins: buyers get a
+    // short-lived signed URL from a Cloud Function (Phase 4).
+    // Admins may upload / replace / delete the PDF.
+    match /notes_private/{noteId}/{fileName} {
+      allow read: if false;
+      allow create, update: if isAdmin()
+        && fileName == 'file.pdf'
+        && request.resource.size < 50 * 1024 * 1024
+        && request.resource.contentType == 'application/pdf';
+      allow delete: if isAdmin();
+    }
+
+    // ── notes_public/{noteId}/thumbnail.jpg and preview.pdf ──
+    // Anyone can view. Admins upload thumbnails; preview.pdf is generated
+    // by a Cloud Function (Admin SDK), never uploaded from the app.
+    match /notes_public/{noteId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && fileName == 'thumbnail.jpg'
+        && isImageUnder(2 * 1024 * 1024);
+      allow delete: if isAdmin();
+    }
+
+    // ── universities/{universityId}/logo — public read, admin write ──
+    match /universities/{universityId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && fileName == 'logo'
+        && isImageUnder(1024 * 1024);
+      allow delete: if isAdmin();
+    }
+
+    // resources/** → opened in Phase 6.
   }
 }

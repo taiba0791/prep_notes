@@ -19,7 +19,7 @@ import 'app_theme_colors.dart';
 abstract final class AppTheme {
   static const double radiusSmall = 8;
   static const double radiusMedium = 12;
-  static const double radiusLarge = 16;
+  static const double radiusLarge = 20;
   static const double radiusXLarge = 24;
 
   static ThemeData get light => _build(_lightScheme, AppThemeColors.light);

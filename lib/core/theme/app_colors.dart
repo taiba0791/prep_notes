@@ -24,9 +24,9 @@ abstract final class AppColors {
   static const onMarigoldLight = Color(0xFF5C3A00);
 
   // Light-mode neutrals (warm greys to match the cream)
-  static const warmGrey = Color(0xFF6B6461);
+  static const warmGrey = Color(0xFF5C5654);
   static const outline = Color(0xFFCFC8C4);
-  static const border = Color(0xFFE8E2DE);
+  static const border = Color(0xFFE6DFD8);
   static const surfaceLow = Color(0xFFFBF8F3);
   static const surfaceMid = Color(0xFFF6F0E7);
   static const surfaceHigh = Color(0xFFF1E8DB);
@@ -35,18 +35,21 @@ abstract final class AppColors {
   static const darkSurface = Color(0xFF171413);
   static const darkSurfaceLowest = Color(0xFF110F0E);
   static const darkSurfaceLow = Color(0xFF1E1B1A);
-  static const darkSurfaceMid = Color(0xFF262221);
+  static const darkSurfaceMid = Color(0xFF1E1918);
   static const darkSurfaceHigh = Color(0xFF302B29);
   static const darkSurfaceHighest = Color(0xFF3A3432);
-  static const darkText = Color(0xFFF4EFEC);
-  static const darkTextMuted = Color(0xFFCBC2BE);
+  static const darkText = Color(0xFFF3ECE6);
+  static const darkTextMuted = Color(0xFFB3A8A2);
   static const darkOutline = Color(0xFF8C827E);
-  static const darkBorder = Color(0xFF3F3936);
-  static const darkCream = Color(0xFF2E2724);
+  static const darkBorder = Color(0xFF352D2B);
+  static const darkCream = Color(0xFF2A2220);
 
   // Dark mode: lighter brand tones so they stay readable on ink
-  static const rose = Color(0xFFF28CAB);
-  static const onRose = Color(0xFF4A0A1F);
+  static const rose = Color(0xFFC4456B);
+  static const onRose = Color(0xFFFFFFFF);
+
+  /// Claret for small TEXT on dark backgrounds (#C4456B is too dim: 3.8:1).
+  static const roseLight = Color(0xFFF28CAB);
   static const claretContainerDark = Color(0xFF6E1631);
   static const onClaretContainerDark = Color(0xFFFFD9E3);
   static const tealLight = Color(0xFF6FC9C9);

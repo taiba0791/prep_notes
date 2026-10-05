@@ -3,61 +3,101 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:prepnotes/core/constants/app_strings.dart';
+import 'package:prepnotes/core/router/route_paths.dart';
 import 'package:prepnotes/core/theme/app_theme.dart';
 import 'package:prepnotes/core/widgets/app_scaffold.dart';
+import 'package:prepnotes/features/auth/data/auth_repository.dart';
+import 'package:prepnotes/features/auth/domain/auth_session.dart';
+
+import '../fakes/fake_auth_repository.dart';
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  Future<int?> pumpAtWidth(WidgetTester tester, double width) async {
+  int? tappedTab;
+  String? openedPath;
+
+  Future<void> pumpAtWidth(
+    WidgetTester tester,
+    double width, {
+    AuthSession session = AuthSession.guest,
+  }) async {
     tester.view.physicalSize = Size(width, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    tappedTab = null;
+    openedPath = null;
 
-    int? tapped;
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository(session)),
+        ],
         child: MaterialApp(
           theme: AppTheme.light,
           home: AppScaffold(
-            selectedIndex: 0,
-            onDestinationSelected: (i) => tapped = i,
+            selectedIndex: AppBranch.home,
+            onDestinationSelected: (i) => tappedTab = i,
+            onNavigate: (p) => openedPath = p,
             child: const Text('page body'),
           ),
         ),
       ),
     );
-    await tester.tap(find.text(AppStrings.navResources));
-    return tapped;
+    await tester.pumpAndSettle();
   }
 
-  testWidgets('mobile shows a bottom navigation bar', (tester) async {
-    final tapped = await pumpAtWidth(tester, 360);
+  testWidgets('phone: bottom bar with the 5 tabs', (tester) async {
+    await pumpAtWidth(tester, 360);
     expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.text(AppStrings.navStudentVoice), findsNothing);
     expect(find.text('page body'), findsOneWidget);
-    expect(tapped, 3);
+
+    await tester.tap(find.text(AppStrings.navResources));
+    expect(tappedTab, AppBranch.resources);
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('tablet shows a compact side rail', (tester) async {
-    final tapped = await pumpAtWidth(tester, 800);
-    expect(find.byType(NavigationBar), findsNothing);
-    final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-    expect(rail.extended, isFalse);
-    expect(tapped, 3);
+  for (final width in [700.0, 1300.0]) {
+    testWidgets('${width.toInt()} px: design top nav for guests', (
+      tester,
+    ) async {
+      await pumpAtWidth(tester, width);
+      expect(find.byType(NavigationBar), findsNothing);
+      for (final label in [
+        AppStrings.navNotes,
+        AppStrings.navStudyZone,
+        AppStrings.navResourceRoom,
+        AppStrings.navStudentVoice,
+        AppStrings.loginButton,
+        AppStrings.signUpFree,
+      ]) {
+        expect(find.text(label), findsOneWidget, reason: label);
+      }
+      expect(tester.takeException(), isNull, reason: 'no overflow');
+
+      // Links sit in a horizontally scrollable row; bring each into view.
+      await tester.ensureVisible(find.text(AppStrings.navResourceRoom));
+      await tester.tap(find.text(AppStrings.navResourceRoom));
+      expect(tappedTab, AppBranch.resources);
+
+      await tester.ensureVisible(find.text(AppStrings.navStudentVoice));
+      await tester.tap(find.text(AppStrings.navStudentVoice));
+      expect(openedPath, RoutePaths.studentVoice);
+
+      await tester.tap(find.text(AppStrings.signUpFree));
+      expect(openedPath, RoutePaths.register);
+    });
+  }
+
+  testWidgets('signed in: avatar instead of Log in / Sign up', (tester) async {
+    await pumpAtWidth(tester, 1300, session: const AuthSession(uid: 'u1'));
+    expect(find.text(AppStrings.signUpFree), findsNothing);
+    await tester.tap(find.byTooltip(AppStrings.navProfile));
+    expect(tappedTab, AppBranch.profile);
   });
 
-  testWidgets('desktop shows an extended rail with the app name', (
-    tester,
-  ) async {
-    final tapped = await pumpAtWidth(tester, 1300);
-    final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-    expect(rail.extended, isTrue);
-    expect(find.text(AppStrings.appName), findsOneWidget);
-    expect(tapped, 3);
-  });
-
-  test('there are exactly 5 main destinations', () {
+  test('there are exactly 5 tab branches', () {
     expect(appDestinations.map((d) => d.label), [
       AppStrings.navHome,
       AppStrings.navNotes,

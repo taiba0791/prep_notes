@@ -22,7 +22,6 @@ const users = {
 
 describe("Firestore: not-yet-opened collections are denied", () => {
   const docs = [
-    "notes/n1", // Phase 2
     "orders/o1", // Phase 4
     "feedback/f1", // Phase 7
     "stats/global", // Phase 5
@@ -40,8 +39,8 @@ describe("Firestore: not-yet-opened collections are denied", () => {
       });
     }
 
-    it(`${who} cannot list notes`, async () => {
-      await assertFails(ctx().firestore().collection("notes").get());
+    it(`${who} cannot list orders`, async () => {
+      await assertFails(ctx().firestore().collection("orders").get());
     });
   }
 });

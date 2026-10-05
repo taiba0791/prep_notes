@@ -163,6 +163,7 @@ abstract final class NoteFields {
   static const universityName = 'universityName';
   static const subjectName = 'subjectName';
   static const moduleTitle = 'moduleTitle';
+  static const semesterNumber = 'semesterNumber';
 
   static const price = 'price'; // paise
   static const isFree = 'isFree';
@@ -173,6 +174,9 @@ abstract final class NoteFields {
   /// Private Storage path; clients can never read it directly.
   static const storagePath = 'storagePath';
   static const previewPages = 'previewPages';
+
+  /// Set by Cloud Functions once preview.pdf exists.
+  static const hasPreview = 'hasPreview';
   static const isPublished = 'isPublished';
   static const purchaseCount = 'purchaseCount';
   static const tags = CommonFields.tags;

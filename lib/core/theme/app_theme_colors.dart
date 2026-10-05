@@ -40,8 +40,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   );
 
   static const dark = AppThemeColors(
-    link: AppColors.rose,
-    highlight: AppColors.rose,
+    link: AppColors.roseLight,
+    highlight: AppColors.roseLight,
     cream: AppColors.darkCream,
     success: AppColors.successLight,
     warning: AppColors.warningLight,
