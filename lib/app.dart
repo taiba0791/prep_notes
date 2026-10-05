@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'core/config/firebase_config.dart';
 import 'core/constants/app_strings.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -19,6 +20,20 @@ class PrepNotesApp extends ConsumerWidget {
       // Follows the device setting for now; a user toggle comes with Profile.
       themeMode: ThemeMode.system,
       routerConfig: ref.watch(appRouterProvider),
+      // A corner ribbon so you always know you're on fake emulator data.
+      builder: (context, child) => EmulatorConfig.enabled
+          ? Banner(
+              message: AppStrings.emulatorBanner,
+              location: BannerLocation.topEnd,
+              color: Theme.of(context).colorScheme.tertiary,
+              textStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onTertiary,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+              child: child!,
+            )
+          : child!,
     );
   }
 }

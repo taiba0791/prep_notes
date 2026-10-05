@@ -7,12 +7,14 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app.dart';
+import 'core/config/firebase_config.dart';
 import 'core/errors/error_reporter.dart';
 import 'firebase_options.dart';
 
 /// App start-up, in order:
 /// 1. Run everything inside an error zone, so no async error is lost.
-/// 2. Connect to Firebase (project from `firebase_options.dart`).
+/// 2. Connect to Firebase (project from `firebase_options.dart`), or to the
+///    local emulators when started with `--dart-define=USE_EMULATORS=true`.
 /// 3. Route all uncaught errors to the [ErrorReporter]
 ///    (Crashlytics on Android/iOS, console on web).
 /// 4. Start the app inside Riverpod's [ProviderScope].
@@ -30,6 +32,9 @@ void main() {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+
+      // Debug only: talk to the local emulators instead of the real project.
+      if (EmulatorConfig.enabled) await EmulatorConfig.connect();
 
       reporter = await ErrorReporter.create();
 
