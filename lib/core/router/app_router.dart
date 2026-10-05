@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/auth/data/auth_session_provider.dart';
+import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/auth_session.dart';
 import '../constants/app_strings.dart';
 import '../widgets/app_scaffold.dart';
@@ -26,12 +26,14 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   // Tell the router to re-check guards when sign-in state changes, without
-  // rebuilding the router itself.
-  final authChanges = ValueNotifier<AuthSession>(
-    ref.read(authControllerProvider),
-  );
+  // rebuilding the router itself. While Firebase is still restoring the
+  // session, the value is AuthSession.loading.
+  AuthSession current() =>
+      ref.read(authSessionProvider).value ?? AuthSession.loading;
+
+  final authChanges = ValueNotifier<AuthSession>(current());
   ref
-    ..listen(authControllerProvider, (_, next) => authChanges.value = next)
+    ..listen(authSessionProvider, (_, _) => authChanges.value = current())
     ..onDispose(authChanges.dispose);
 
   final router = GoRouter(
@@ -111,7 +113,7 @@ GoRouter appRouter(Ref ref) {
                 path: RoutePaths.profile,
                 builder: (context, state) => const PlaceholderScreen(
                   title: AppStrings.navProfile,
-                  actions: [if (kDebugMode) _DebugSignOutButton()],
+                  actions: [_SignOutButton()],
                 ),
               ),
               _page(RoutePaths.purchases, AppStrings.pagePurchases),
@@ -121,13 +123,7 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // Auth (full screen, no navigation)
-      GoRoute(
-        path: RoutePaths.login,
-        builder: (context, state) => const PlaceholderScreen(
-          title: AppStrings.pageLogin,
-          actions: [if (kDebugMode) _DebugSignInButtons()],
-        ),
-      ),
+      _page(RoutePaths.login, AppStrings.pageLogin),
       _page(RoutePaths.register, AppStrings.pageRegister),
       _page(RoutePaths.forgotPassword, AppStrings.pageForgotPassword),
 
@@ -190,40 +186,15 @@ GoRoute _page(
   );
 }
 
-/// DEBUG ONLY (removed in Phase 1): fake sign-in to try guards.
-class _DebugSignInButtons extends ConsumerWidget {
-  const _DebugSignInButtons();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.read(authControllerProvider.notifier);
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
-      children: [
-        FilledButton(
-          onPressed: () => auth.debugSignInAs(AuthSession.student),
-          child: const Text(AppStrings.debugSignInStudent),
-        ),
-        OutlinedButton(
-          onPressed: () => auth.debugSignInAs(AuthSession.admin),
-          child: const Text(AppStrings.debugSignInAdmin),
-        ),
-      ],
-    );
-  }
-}
-
-/// DEBUG ONLY (removed in Phase 1).
-class _DebugSignOutButton extends ConsumerWidget {
-  const _DebugSignOutButton();
+/// Temporary until the Profile screen (Step 1.8).
+class _SignOutButton extends ConsumerWidget {
+  const _SignOutButton();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return OutlinedButton(
-      onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
-      child: const Text(AppStrings.debugSignOut),
+      onPressed: () => ref.read(authRepositoryProvider).signOut(),
+      child: const Text(AppStrings.signOut),
     );
   }
 }

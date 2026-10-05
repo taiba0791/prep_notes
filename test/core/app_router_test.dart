@@ -7,17 +7,26 @@ import 'package:prepnotes/app.dart';
 import 'package:prepnotes/core/constants/app_strings.dart';
 import 'package:prepnotes/core/router/app_router.dart';
 import 'package:prepnotes/core/router/route_paths.dart';
-import 'package:prepnotes/features/auth/data/auth_session_provider.dart';
+import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_session.dart';
+
+import '../fakes/fake_auth_repository.dart';
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
   late ProviderContainer container;
   late GoRouter router;
+  late FakeAuthRepository auth;
+
+  const student = AuthSession(uid: 'student1');
+  const admin = AuthSession(uid: 'admin1', isAdmin: true);
 
   Future<void> pumpApp(WidgetTester tester) async {
-    container = ProviderContainer();
+    auth = FakeAuthRepository();
+    container = ProviderContainer(
+      overrides: [authRepositoryProvider.overrideWithValue(auth)],
+    );
     addTearDown(container.dispose);
     router = container.read(appRouterProvider);
     await tester.pumpWidget(
@@ -74,23 +83,34 @@ void main() {
     expect(location(), '/login?from=%2Fprofile');
     expect(pageTitle(AppStrings.pageLogin), findsOneWidget);
 
-    container
-        .read(authControllerProvider.notifier)
-        .debugSignInAs(AuthSession.student);
+    auth.emit(student);
     await tester.pumpAndSettle();
     expect(location(), RoutePaths.profile);
   });
 
   testWidgets('student is kept out of admin; admin gets in', (tester) async {
     await pumpApp(tester);
-    final auth = container.read(authControllerProvider.notifier)
-      ..debugSignInAs(AuthSession.student);
+    auth.emit(student);
+    await tester.pumpAndSettle();
     await go(tester, RoutePaths.adminOrders);
     expect(location(), RoutePaths.home);
 
-    auth.debugSignInAs(AuthSession.admin);
+    auth.emit(admin);
+    await tester.pumpAndSettle();
     await go(tester, RoutePaths.adminOrder('o1'));
     expect(pageTitle(AppStrings.pageAdminOrder), findsOneWidget);
     expect(find.text('orderId: o1'), findsOneWidget);
+  });
+
+  testWidgets('signing out on a protected page goes to login', (tester) async {
+    await pumpApp(tester);
+    auth.emit(student);
+    await tester.pumpAndSettle();
+    await go(tester, RoutePaths.profile);
+    expect(location(), RoutePaths.profile);
+
+    await tester.tap(find.text(AppStrings.signOut));
+    await tester.pumpAndSettle();
+    expect(location(), '/login?from=%2Fprofile');
   });
 }

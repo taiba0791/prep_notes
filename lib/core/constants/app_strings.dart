@@ -78,8 +78,6 @@ abstract final class AppStrings {
   static const authErrorCancelled = 'Sign-in was cancelled.';
   static const authErrorUnknown = 'Something went wrong. Please try again.';
 
-  // DEBUG-only sign-in shortcuts (removed in Phase 1)
-  static const debugSignInStudent = 'Continue as student (debug)';
-  static const debugSignInAdmin = 'Continue as admin (debug)';
-  static const debugSignOut = 'Sign out (debug)';
+  // Account
+  static const signOut = 'Log out';
 }

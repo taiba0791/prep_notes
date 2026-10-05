@@ -1,26 +1,29 @@
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-/// Who is using the app right now, as far as routing cares.
+part 'auth_session.freezed.dart';
+
+/// Who is using the app right now, as far as the UI and routing care.
 ///
-/// Phase 0 placeholder. In Phase 1 this is built from Firebase Auth
-/// (signed-in user + `admin` custom claim from the ID token).
-@immutable
-class AuthSession {
-  const AuthSession({required this.isSignedIn, required this.isAdmin});
+/// Built from Firebase Auth by the auth repository. `isAdmin` comes from the
+/// `admin` custom claim in the ID token (set only by a Cloud Function).
+/// Hiding pages is convenience — real protection is in rules and Functions.
+@freezed
+abstract class AuthSession with _$AuthSession {
+  const factory AuthSession({
+    /// Firebase uid; null when signed out.
+    String? uid,
+    String? email,
+    @Default(false) bool emailVerified,
+    @Default(false) bool isAdmin,
 
-  static const guest = AuthSession(isSignedIn: false, isAdmin: false);
-  static const student = AuthSession(isSignedIn: true, isAdmin: false);
-  static const admin = AuthSession(isSignedIn: true, isAdmin: true);
+    /// True only while Firebase restores the session at app start.
+    @Default(false) bool isLoading,
+  }) = _AuthSession;
 
-  final bool isSignedIn;
-  final bool isAdmin;
+  const AuthSession._();
 
-  @override
-  bool operator ==(Object other) =>
-      other is AuthSession &&
-      other.isSignedIn == isSignedIn &&
-      other.isAdmin == isAdmin;
+  static const guest = AuthSession();
+  static const loading = AuthSession(isLoading: true);
 
-  @override
-  int get hashCode => Object.hash(isSignedIn, isAdmin);
+  bool get isSignedIn => uid != null;
 }

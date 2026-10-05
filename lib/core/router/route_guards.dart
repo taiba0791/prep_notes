@@ -31,6 +31,10 @@ bool isAuthPage(String path) =>
 String? guardRedirect({required AuthSession session, required Uri uri}) {
   final path = uri.path;
 
+  // Firebase is still restoring the login (e.g. after a page refresh):
+  // don't decide yet. The router re-runs this as soon as it knows.
+  if (session.isLoading) return null;
+
   if (!session.isSignedIn && requiresSignIn(path)) {
     final from = Uri.encodeComponent(uri.toString());
     return '${RoutePaths.login}?${RoutePaths.fromParam}=$from';

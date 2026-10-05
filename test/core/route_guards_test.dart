@@ -44,7 +44,7 @@ void main() {
   });
 
   group('student', () {
-    const s = AuthSession.student;
+    const s = AuthSession(uid: 'student1');
 
     test('can open protected pages', () {
       expect(redirect(s, RoutePaths.profile), isNull);
@@ -72,8 +72,30 @@ void main() {
   });
 
   test('admin can open admin pages', () {
-    expect(redirect(AuthSession.admin, RoutePaths.adminNotes), isNull);
-    expect(redirect(AuthSession.admin, RoutePaths.adminOrder('o1')), isNull);
+    expect(
+      redirect(
+        const AuthSession(uid: 'admin1', isAdmin: true),
+        RoutePaths.adminNotes,
+      ),
+      isNull,
+    );
+    expect(
+      redirect(
+        const AuthSession(uid: 'admin1', isAdmin: true),
+        RoutePaths.adminOrder('o1'),
+      ),
+      isNull,
+    );
+  });
+
+  test('while the session is loading, nothing is redirected', () {
+    for (final path in [
+      RoutePaths.profile,
+      RoutePaths.admin,
+      RoutePaths.login,
+    ]) {
+      expect(redirect(AuthSession.loading, path), isNull, reason: path);
+    }
   });
 
   test('"/administrator" is not treated as an admin page', () {
