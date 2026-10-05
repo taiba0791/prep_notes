@@ -20,6 +20,7 @@ import {
   Collections,
   NoteFields,
   STORAGE_BUCKET,
+  STORAGE_TRIGGER_REGION,
   StoragePaths,
 } from "../config";
 
@@ -86,7 +87,12 @@ export async function deleteNoteFiles(noteId: string): Promise<void> {
 }
 
 export const onNotePdfUploaded = onObjectFinalized(
-  { bucket: STORAGE_BUCKET, memory: "1GiB", timeoutSeconds: 120 },
+  {
+    bucket: STORAGE_BUCKET,
+    region: STORAGE_TRIGGER_REGION,
+    memory: "1GiB",
+    timeoutSeconds: 120,
+  },
   async (event) => {
     const noteId = noteIdFromPdfPath(event.data.name);
     if (!noteId) return; // not a note PDF (avatars, thumbnails, ...)

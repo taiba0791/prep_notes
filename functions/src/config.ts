@@ -32,6 +32,13 @@ export const OrderFields = {
   userDeletedAt: "userDeletedAt",
 } as const;
 
+/**
+ * Region for Cloud STORAGE triggers. The default bucket lives in the "asia1"
+ * dual-region (Tokyo + Osaka), and a storage trigger must run inside it, so
+ * those functions use Tokyo. Everything else stays in Mumbai (asia-south1).
+ */
+export const STORAGE_TRIGGER_REGION = "asia-northeast1";
+
 /** Default Cloud Storage bucket (lib/firebase_options.dart storageBucket). */
 export const STORAGE_BUCKET = "prepnotes-635d6.firebasestorage.app";
 
