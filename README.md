@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 0 — foundation (navigation shell, placeholder screens) |
+| Status | Phase 1 done — accounts (email + Google), profile, admin owner, account deletion |
 
 ---
 
@@ -131,7 +131,7 @@ cd ..
 
 ```bash
 firebase deploy --only firestore:rules     # database security rules
-firebase deploy --only storage             # storage rules (needs Blaze + a bucket)
+firebase deploy --only storage             # storage rules
 
 flutter build web
 firebase deploy --only hosting             # the website
