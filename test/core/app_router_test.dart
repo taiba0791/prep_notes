@@ -12,6 +12,7 @@ import 'package:prepnotes/core/router/route_paths.dart';
 import 'package:prepnotes/data/repositories/user_repository.dart';
 import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_session.dart';
+import 'package:prepnotes/features/auth/presentation/login_screen.dart';
 
 import '../fakes/fake_auth_repository.dart';
 
@@ -63,7 +64,8 @@ void main() {
 
   testWidgets('tapping a tab changes the URL', (tester) async {
     await pumpApp(tester);
-    await tester.tap(find.text(AppStrings.navResources));
+    await tester.ensureVisible(find.text(AppStrings.navResourceRoom));
+    await tester.tap(find.text(AppStrings.navResourceRoom));
     await tester.pumpAndSettle();
     expect(location(), RoutePaths.resources);
     expect(pageTitle(AppStrings.navResources), findsOneWidget);
@@ -90,7 +92,7 @@ void main() {
     await pumpApp(tester);
     await go(tester, RoutePaths.profile);
     expect(location(), '/login?from=%2Fprofile');
-    expect(find.text(AppStrings.loginTitle), findsOneWidget);
+    expect(find.byType(LoginScreen), findsOneWidget);
 
     auth.emit(student);
     await tester.pumpAndSettle();

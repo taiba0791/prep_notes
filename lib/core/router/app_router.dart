@@ -53,11 +53,13 @@ GoRouter appRouter(Ref ref) {
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppScaffold(
           selectedIndex: shell.currentIndex,
+          currentPath: state.uri.path,
           // Tapping the current tab again returns to that tab's first page.
           onDestinationSelected: (index) => shell.goBranch(
             index,
             initialLocation: index == shell.currentIndex,
           ),
+          onNavigate: (path) => GoRouter.of(context).go(path),
           child: shell,
         ),
         branches: [

@@ -10,6 +10,9 @@ abstract final class AppStrings {
   static const navStudyZone = 'Study Zone';
   static const navResources = 'Resources';
   static const navProfile = 'Profile';
+  static const navResourceRoom = 'Resource Room';
+  static const navStudentVoice = 'Student Voice';
+  static const signUpFree = 'Sign up free';
 
   // Common
   static const comingSoon = 'Coming soon';
@@ -176,12 +179,19 @@ abstract final class AppStrings {
   static const passwordHint =
       'At least 8 characters, with a letter and a number';
 
+  // Auth screens — claret welcome panel
+  static const authPanelHeadlineStart = 'Pick up where ';
+  static const authPanelHeadlineAccent = 'your last revision';
+  static const authPanelHeadlineEnd = ' ended.';
+  static const authPanelTagline =
+      'Your purchases, study time and requests stay with your account.';
+
   // Login
-  static const loginTitle = 'Welcome back';
+  static const loginTitle = 'Log in';
   static const loginSubtitle = 'Log in to access your notes and purchases.';
   static const loginButton = 'Log in';
   static const continueWithGoogle = 'Continue with Google';
-  static const orDivider = 'or';
+  static const orDivider = 'or use email';
   static const forgotPasswordLink = 'Forgot password?';
   static const noAccountPrompt = "Don't have an account?";
   static const createAccountLink = 'Create one';
