@@ -1,56 +1,32 @@
 /**
- * Security-rules tests (Phase 0): everything is denied for everyone.
+ * Security-rules tests: Firestore collections not opened yet are denied for
+ * everyone. (Storage rules: storage.test.ts.)
  *
- * Run with the emulators (from the project root):
- *   firebase emulators:exec --only firestore,storage "npm --prefix functions run test:rules"
+ * Run (from the project root):  npm --prefix functions run rules:test
  *
- * Each later phase adds a test file proving exactly which doors it opens,
- * for: guest, student (owner), another student, and admin.
+ * When a phase opens a collection, move it out of this file into its own
+ * test file (e.g. users → users.test.ts in Phase 1).
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import {
-  assertFails,
-  initializeTestEnvironment,
-  type RulesTestContext,
-  type RulesTestEnvironment,
-} from "@firebase/rules-unit-testing";
-import { afterAll, beforeAll, describe, it } from "vitest";
+import { assertFails } from "@firebase/rules-unit-testing";
+import { describe, it } from "vitest";
+import { setupRulesEnv } from "./helpers";
 
-const PROJECT_ID = "prepnotes-635d6";
-const root = resolve(__dirname, "../../..");
+const t = setupRulesEnv();
 
-let env: RulesTestEnvironment;
-
-beforeAll(async () => {
-  env = await initializeTestEnvironment({
-    projectId: PROJECT_ID,
-    firestore: { rules: readFileSync(resolve(root, "firestore.rules"), "utf8") },
-    storage: { rules: readFileSync(resolve(root, "storage.rules"), "utf8") },
-  });
-});
-
-afterAll(async () => {
-  await env?.cleanup();
-});
-
-/** The three kinds of client we always test as. */
-const users: Record<string, () => RulesTestContext> = {
-  guest: () => env.unauthenticatedContext(),
-  student: () => env.authenticatedContext("student1"),
-  // A client token claiming admin: even admins are denied in Phase 0.
-  admin: () => env.authenticatedContext("admin1", { admin: true }),
+const users = {
+  guest: () => t.guest(),
+  student: () => t.student("student1"),
+  // A token claiming admin: still denied until each collection's phase.
+  admin: () => t.admin(),
 };
 
-describe("Firestore: deny all", () => {
+describe("Firestore: not-yet-opened collections are denied", () => {
   const docs = [
-    "users/student1",
-    "users/student1/entitlements/n1",
-    "notes/n1",
-    "universities/u1",
-    "orders/o1",
-    "feedback/f1",
-    "stats/global",
+    "notes/n1", // Phase 2
+    "orders/o1", // Phase 4
+    "feedback/f1", // Phase 7
+    "stats/global", // Phase 5
+    "users/student1/studySessions/s1", // Phase 8
   ];
 
   for (const [who, ctx] of Object.entries(users)) {
@@ -67,25 +43,5 @@ describe("Firestore: deny all", () => {
     it(`${who} cannot list notes`, async () => {
       await assertFails(ctx().firestore().collection("notes").get());
     });
-  }
-});
-
-describe("Storage: deny all", () => {
-  const files = [
-    "notes_private/n1/file.pdf",
-    "notes_public/n1/thumbnail.jpg",
-    "avatars/student1/avatar.jpg",
-  ];
-
-  for (const [who, ctx] of Object.entries(users)) {
-    for (const path of files) {
-      it(`${who} cannot read ${path}`, async () => {
-        await assertFails(ctx().storage().ref(path).getDownloadURL());
-      });
-
-      it(`${who} cannot upload to ${path}`, async () => {
-        await assertFails(ctx().storage().ref(path).putString("x"));
-      });
-    }
   }
 });

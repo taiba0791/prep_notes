@@ -4,7 +4,10 @@ import 'route_paths.dart';
 /// Pages that need a signed-in user.
 bool requiresSignIn(String path) {
   if (requiresAdmin(path)) return true;
-  if (path == RoutePaths.profile || path == RoutePaths.purchases) return true;
+  if (path == RoutePaths.profile || path.startsWith('${RoutePaths.profile}/')) {
+    return true;
+  }
+  if (path == RoutePaths.purchases) return true;
   if (path.startsWith('/checkout/')) return true;
   // The PDF viewer (/notes/:noteId/view) needs a signed-in buyer.
   final segments = Uri.parse(path).pathSegments;
@@ -30,6 +33,10 @@ bool isAuthPage(String path) =>
 /// Firestore/Storage rules and Cloud Functions.
 String? guardRedirect({required AuthSession session, required Uri uri}) {
   final path = uri.path;
+
+  // Firebase is still restoring the login (e.g. after a page refresh):
+  // don't decide yet. The router re-runs this as soon as it knows.
+  if (session.isLoading) return null;
 
   if (!session.isSignedIn && requiresSignIn(path)) {
     final from = Uri.encodeComponent(uri.toString());

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
@@ -15,12 +16,14 @@ void main() {
 
     int? tapped;
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light,
-        home: AppScaffold(
-          selectedIndex: 0,
-          onDestinationSelected: (i) => tapped = i,
-          child: const Text('page body'),
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: AppScaffold(
+            selectedIndex: 0,
+            onDestinationSelected: (i) => tapped = i,
+            child: const Text('page body'),
+          ),
         ),
       ),
     );

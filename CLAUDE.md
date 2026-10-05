@@ -39,16 +39,19 @@ Targets: Flutter Web + Android + iOS. Backend: Firebase (Auth, Firestore, Storag
 ## Definition of done (per feature)
 Works on web + mobile layout, handles loading/error/empty states, rules updated + tested in emulator, no analyzer warnings.
 
-## Teaching Mode (VERY IMPORTANT)
-The user is a learner and wants to understand everything. Always:
-- Work on ONE phase at a time, and inside it ONE small step at a time. Never leave work half-done and never jump ahead.
-- Before coding: explain in simple English what you are about to build and why.
-- After each step, give a report with these headings:
+## Working mode: FAST (chosen by the user on 2026-10-05)
+The user is a learner but prefers speed over step-by-step check-ins.
+- Work on ONE phase at a time. Within it, build in large chunks (ideally the whole
+  rest of the phase) without stopping for "next" between small steps.
+- Keep quality: tests, rules tests, analyzer, builds for web + Android. No shortcuts on security.
+- Only stop mid-chunk if something truly blocks on the user (console click, key, login, deploy).
+  Otherwise batch all manual steps into the final report.
+- Brief comments while working are fine; no long explanations before each piece.
+- At the END of each chunk/phase, give ONE report with these headings:
   1. What was built (file by file, in simple words)
   2. How it works
   3. What the user must do (exact, numbered manual steps: commands to run, Firebase console clicks, API keys to add, packages to install)
   4. How to test it
   5. What the next step is
-- If something needs the user (Firebase console, API keys, logins), STOP and say exactly what to do. Do not fake or skip it.
-- Never mark a step as done until it actually works and `flutter analyze` is clean.
-- Wait for the user to say "next" before continuing.
+- Never claim something works unless it actually ran and `flutter analyze` is clean.
+- Starting a NEW phase still needs a short plan + the user's approval.

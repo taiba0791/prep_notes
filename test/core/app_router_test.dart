@@ -1,3 +1,4 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -5,19 +6,36 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:prepnotes/app.dart';
 import 'package:prepnotes/core/constants/app_strings.dart';
+import 'package:prepnotes/core/constants/firestore_paths.dart';
 import 'package:prepnotes/core/router/app_router.dart';
 import 'package:prepnotes/core/router/route_paths.dart';
-import 'package:prepnotes/features/auth/data/auth_session_provider.dart';
+import 'package:prepnotes/data/repositories/user_repository.dart';
+import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_session.dart';
+
+import '../fakes/fake_auth_repository.dart';
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
   late ProviderContainer container;
   late GoRouter router;
+  late FakeAuthRepository auth;
+  late FakeFirebaseFirestore db;
+
+  const student = AuthSession(uid: 'student1');
+  const admin = AuthSession(uid: 'admin1', isAdmin: true);
 
   Future<void> pumpApp(WidgetTester tester) async {
-    container = ProviderContainer();
+    auth = FakeAuthRepository();
+    container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        userRepositoryProvider.overrideWithValue(
+          FirestoreUserRepository(db = FakeFirebaseFirestore()),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     router = container.read(appRouterProvider);
     await tester.pumpWidget(
@@ -72,25 +90,62 @@ void main() {
     await pumpApp(tester);
     await go(tester, RoutePaths.profile);
     expect(location(), '/login?from=%2Fprofile');
-    expect(pageTitle(AppStrings.pageLogin), findsOneWidget);
+    expect(find.text(AppStrings.loginTitle), findsOneWidget);
 
-    container
-        .read(authControllerProvider.notifier)
-        .debugSignInAs(AuthSession.student);
+    auth.emit(student);
     await tester.pumpAndSettle();
     expect(location(), RoutePaths.profile);
   });
 
   testWidgets('student is kept out of admin; admin gets in', (tester) async {
     await pumpApp(tester);
-    final auth = container.read(authControllerProvider.notifier)
-      ..debugSignInAs(AuthSession.student);
+    auth.emit(student);
+    await tester.pumpAndSettle();
     await go(tester, RoutePaths.adminOrders);
     expect(location(), RoutePaths.home);
 
-    auth.debugSignInAs(AuthSession.admin);
+    auth.emit(admin);
+    await tester.pumpAndSettle();
     await go(tester, RoutePaths.adminOrder('o1'));
     expect(pageTitle(AppStrings.pageAdminOrder), findsOneWidget);
     expect(find.text('orderId: o1'), findsOneWidget);
+  });
+
+  testWidgets('signing out on a protected page goes to login', (tester) async {
+    await pumpApp(tester);
+    auth.emit(student);
+    await tester.pumpAndSettle();
+    await go(tester, RoutePaths.profile);
+    expect(location(), RoutePaths.profile);
+
+    // No profile document in the fake DB → "setting up" view with Log out.
+    await tester.tap(find.text(AppStrings.signOut));
+    await tester.pumpAndSettle();
+    expect(location(), '/login?from=%2Fprofile');
+  });
+
+  testWidgets('deleting the account lands on Home with a message', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpApp(tester);
+    await db.doc(FirestorePaths.user('student1')).set({
+      UserFields.name: 'Student One',
+      UserFields.email: 's1@x.com',
+    });
+    auth.emit(student);
+    await tester.pumpAndSettle();
+    await go(tester, RoutePaths.profile);
+
+    await tester.tap(find.text(AppStrings.deleteAccount));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(AppStrings.deleteAccountConfirm));
+    await tester.pumpAndSettle();
+
+    expect(auth.calls, contains('deleteAccount'));
+    expect(location(), RoutePaths.home);
+    expect(find.text(AppStrings.accountDeleted), findsOneWidget);
   });
 }

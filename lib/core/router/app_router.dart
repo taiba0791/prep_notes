@@ -1,11 +1,16 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/auth/data/auth_session_provider.dart';
+import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/auth_session.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
+import '../../features/profile/presentation/change_password_screen.dart';
+import '../../features/profile/presentation/edit_profile_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../constants/app_strings.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/not_found_screen.dart';
@@ -26,12 +31,14 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   // Tell the router to re-check guards when sign-in state changes, without
-  // rebuilding the router itself.
-  final authChanges = ValueNotifier<AuthSession>(
-    ref.read(authControllerProvider),
-  );
+  // rebuilding the router itself. While Firebase is still restoring the
+  // session, the value is AuthSession.loading.
+  AuthSession current() =>
+      ref.read(authSessionProvider).value ?? AuthSession.loading;
+
+  final authChanges = ValueNotifier<AuthSession>(current());
   ref
-    ..listen(authControllerProvider, (_, next) => authChanges.value = next)
+    ..listen(authSessionProvider, (_, _) => authChanges.value = current())
     ..onDispose(authChanges.dispose);
 
   final router = GoRouter(
@@ -109,10 +116,17 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.profile,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: AppStrings.navProfile,
-                  actions: [if (kDebugMode) _DebugSignOutButton()],
-                ),
+                builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (context, state) => const EditProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'change-password',
+                    builder: (context, state) => const ChangePasswordScreen(),
+                  ),
+                ],
               ),
               _page(RoutePaths.purchases, AppStrings.pagePurchases),
             ],
@@ -123,13 +137,16 @@ GoRouter appRouter(Ref ref) {
       // Auth (full screen, no navigation)
       GoRoute(
         path: RoutePaths.login,
-        builder: (context, state) => const PlaceholderScreen(
-          title: AppStrings.pageLogin,
-          actions: [if (kDebugMode) _DebugSignInButtons()],
-        ),
+        builder: (context, state) => LoginScreen(from: _from(state)),
       ),
-      _page(RoutePaths.register, AppStrings.pageRegister),
-      _page(RoutePaths.forgotPassword, AppStrings.pageForgotPassword),
+      GoRoute(
+        path: RoutePaths.register,
+        builder: (context, state) => RegisterScreen(from: _from(state)),
+      ),
+      GoRoute(
+        path: RoutePaths.forgotPassword,
+        builder: (context, state) => ForgotPasswordScreen(from: _from(state)),
+      ),
 
       // Checkout (full screen)
       _page('/checkout/:noteId', AppStrings.pageCheckout),
@@ -173,6 +190,9 @@ GoRouter appRouter(Ref ref) {
   return router;
 }
 
+String? _from(GoRouterState state) =>
+    state.uri.queryParameters[RoutePaths.fromParam];
+
 /// A route that shows a [PlaceholderScreen] with its URL parameters.
 /// Each phase swaps these for real screens.
 GoRoute _page(
@@ -188,42 +208,4 @@ GoRoute _page(
         PlaceholderScreen(title: title, params: state.pathParameters),
     routes: routes,
   );
-}
-
-/// DEBUG ONLY (removed in Phase 1): fake sign-in to try guards.
-class _DebugSignInButtons extends ConsumerWidget {
-  const _DebugSignInButtons();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.read(authControllerProvider.notifier);
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
-      children: [
-        FilledButton(
-          onPressed: () => auth.debugSignInAs(AuthSession.student),
-          child: const Text(AppStrings.debugSignInStudent),
-        ),
-        OutlinedButton(
-          onPressed: () => auth.debugSignInAs(AuthSession.admin),
-          child: const Text(AppStrings.debugSignInAdmin),
-        ),
-      ],
-    );
-  }
-}
-
-/// DEBUG ONLY (removed in Phase 1).
-class _DebugSignOutButton extends ConsumerWidget {
-  const _DebugSignOutButton();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return OutlinedButton(
-      onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
-      child: const Text(AppStrings.debugSignOut),
-    );
-  }
 }

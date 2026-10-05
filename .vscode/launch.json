@@ -1,0 +1,27 @@
+{
+  // Pick one in VS Code: Run and Debug (Ctrl+Shift+D) → dropdown → ▶
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PrepNotes · Web · Emulators",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": ["--dart-define=USE_EMULATORS=true"]
+    },
+    {
+      "name": "PrepNotes · Web · Real Firebase",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "PrepNotes · Phone · Real Firebase",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart"
+    }
+  ]
+}

@@ -6,22 +6,19 @@
  *
  * Money is always an integer in paise (₹49 = 4900).
  */
-import { setGlobalOptions } from "firebase-functions/v2";
-import { onRequest } from "firebase-functions/v2/https";
+import "./config";
 import * as logger from "firebase-functions/logger";
-import { initializeApp } from "firebase-admin/app";
+import { onRequest } from "firebase-functions/v2/https";
 
-initializeApp();
-
-// Same region as Firestore (Mumbai). maxInstances caps cost if a function
-// is ever flooded with requests.
-setGlobalOptions({ region: "asia-south1", maxInstances: 10 });
+export { deleteMyAccount } from "./account/delete_my_account";
+export { onUserProfileWritten } from "./admin/owner_admin";
+export { setAdminClaim } from "./admin/set_admin_claim";
 
 /**
  * Health check: proves the Functions pipeline works.
  * GET → { status: "ok", service: "prepnotes-functions", time: ISO string }
  */
-export const healthCheck = onRequest((req, res) => {
+export const healthCheck = onRequest({ invoker: "public" }, (req, res) => {
   logger.info("healthCheck called", { method: req.method });
   res.json({
     status: "ok",

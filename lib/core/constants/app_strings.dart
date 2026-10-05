@@ -14,6 +14,9 @@ abstract final class AppStrings {
   // Common
   static const comingSoon = 'Coming soon';
   static const goHome = 'Go to Home';
+  static const emulatorBanner = 'EMULATOR';
+  static const switchToDark = 'Switch to dark mode';
+  static const switchToLight = 'Switch to light mode';
 
   // 404
   static const notFoundTitle = 'Page not found';
@@ -53,8 +56,155 @@ abstract final class AppStrings {
   static const pageAdminResources = 'Admin · Resources';
   static const pageAdminStudentVoice = 'Admin · Student Voice';
 
-  // DEBUG-only sign-in shortcuts (removed in Phase 1)
-  static const debugSignInStudent = 'Continue as student (debug)';
-  static const debugSignInAdmin = 'Continue as admin (debug)';
-  static const debugSignOut = 'Sign out (debug)';
+  // Auth errors (shown on login / register / password screens)
+  static const authErrorInvalidCredential =
+      'Email or password is incorrect. Please try again.';
+  static const authErrorEmailInUse =
+      'An account with this email already exists. Try logging in instead.';
+  static const authErrorWeakPassword =
+      'That password is too weak. Use at least 8 characters.';
+  static const authErrorInvalidEmail = 'Please enter a valid email address.';
+  static const authErrorUserDisabled =
+      'This account has been disabled. Please contact support.';
+  static const authErrorTooManyRequests =
+      'Too many attempts. Please wait a few minutes and try again.';
+  static const authErrorNetwork =
+      'No internet connection. Check your network and try again.';
+  static const authErrorRequiresRecentLogin =
+      'For your security, please log in again and then retry.';
+  static const authErrorAccountExists =
+      'This email is already linked to another sign-in method. '
+      'Log in with that method first.';
+  static const authErrorProviderDisabled =
+      'This sign-in method is not available right now.';
+  static const authErrorCancelled = 'Sign-in was cancelled.';
+  static const authErrorUnknown = 'Something went wrong. Please try again.';
+
+  // Account
+  static const signOut = 'Log out';
+
+  // Common states
+  static const errorTitle = "Couldn't load this";
+  static const errorMessage =
+      'Please check your internet connection and try again.';
+  static const retry = 'Try again';
+  static const cancel = 'Cancel';
+  static const save = 'Save';
+  static const notSet = 'Not set';
+
+  // Profile
+  static const profileSettingUpTitle = 'Setting up your profile…';
+  static const profileSettingUpMessage =
+      'This only takes a moment after you sign up.';
+  static const adminBadge = 'Admin';
+  static const verifyEmailTitle = 'Please verify your email';
+  static const verifyEmailMessage =
+      "We sent a link to your inbox. You'll need it before buying notes.";
+  static const verifyEmailResend = 'Resend email';
+  static const verifyEmailDone = "I've verified";
+  static const verifyEmailSent = 'Verification email sent.';
+  static const editProfile = 'Edit profile';
+  static const fieldUniversity = 'University';
+  static const fieldSemester = 'Semester';
+  static String semesterLabel(int n) => 'Semester $n';
+  static const statPurchases = 'Purchases';
+  static const statStudyTime = 'Study time';
+  static const statRecentlyViewed = 'Recently viewed';
+  static String studyMinutes(int minutes) =>
+      minutes < 60 ? '$minutes min' : '${minutes ~/ 60} h ${minutes % 60} min';
+  static const linkMyPurchases = 'My purchases';
+  static const linkAdminPanel = 'Admin panel';
+  static const signOutConfirmTitle = 'Log out?';
+  static const signOutConfirmMessage =
+      "You'll need to log in again to see your purchases.";
+  static const universitiesUnavailable =
+      "Couldn't load universities. You can set it later.";
+  static const noUniversitiesYet =
+      'Universities will appear here soon. You can set it later.';
+  static const profileSaved = 'Profile saved.';
+
+  // Profile photo
+  static const changePhoto = 'Change profile photo';
+  static const photoFromGallery = 'Choose from gallery';
+  static const photoFromCamera = 'Take a photo';
+  static const photoRemove = 'Remove photo';
+  static const photoUpdated = 'Profile photo updated.';
+  static const photoRemoved = 'Profile photo removed.';
+  static const photoTooLarge = 'That photo is too large. Please pick another.';
+  static const photoFailed = "Couldn't update your photo. Please try again.";
+
+  // Change password
+  static const changePassword = 'Change password';
+  static const fieldCurrentPassword = 'Current password';
+  static const fieldNewPasswordShort = 'New password';
+  static const passwordChanged = 'Password changed.';
+
+  // Delete account
+  static const deleteAccount = 'Delete account';
+  static const deleteAccountTitle = 'Delete your account?';
+  static const deleteAccountMessage =
+      'This permanently deletes your profile, photo, purchases access and '
+      'study history. It cannot be undone.\n\n'
+      'Order records are kept (without personal details) for accounting.';
+  static const deleteAccountPasswordHint = 'Enter your password to confirm.';
+  static const deleteAccountGoogleHint =
+      "You'll be asked to sign in with Google again to confirm.";
+  static const deleteAccountConfirm = 'Delete permanently';
+  static const accountDeleted = 'Your account has been deleted.';
+
+  // Form validation
+  static const validationEmailRequired = 'Please enter your email.';
+  static const validationEmailInvalid = 'Please enter a valid email address.';
+  static const validationPasswordRequired = 'Please enter your password.';
+  static const validationPasswordShort =
+      'Password must be at least 8 characters.';
+  static const validationPasswordWeak =
+      'Use at least one letter and one number.';
+  static const validationPasswordMismatch = "Passwords don't match.";
+  static const validationNameRequired = 'Please enter your name.';
+  static const validationNameShort = 'Name must be at least 2 characters.';
+  static const validationNameLong = 'Name must be at most 60 characters.';
+
+  // Auth screens — shared
+  static const fieldEmail = 'Email';
+  static const fieldPassword = 'Password';
+  static const fieldNewPassword = 'Create a password';
+  static const fieldConfirmPassword = 'Confirm password';
+  static const fieldName = 'Full name';
+  static const showPassword = 'Show password';
+  static const hidePassword = 'Hide password';
+  static const passwordHint =
+      'At least 8 characters, with a letter and a number';
+
+  // Login
+  static const loginTitle = 'Welcome back';
+  static const loginSubtitle = 'Log in to access your notes and purchases.';
+  static const loginButton = 'Log in';
+  static const continueWithGoogle = 'Continue with Google';
+  static const orDivider = 'or';
+  static const forgotPasswordLink = 'Forgot password?';
+  static const noAccountPrompt = "Don't have an account?";
+  static const createAccountLink = 'Create one';
+
+  // Register
+  static const registerTitle = 'Create your account';
+  static const registerSubtitle = 'Free to join. Buy only the notes you need.';
+  static const registerButton = 'Create account';
+  static const haveAccountPrompt = 'Already have an account?';
+  static const loginLink = 'Log in';
+  static const termsPrefix = 'By creating an account you agree to our ';
+  static const termsLink = 'Terms';
+  static const termsAnd = ' and ';
+  static const privacyLink = 'Privacy Policy';
+
+  // Forgot password
+  static const forgotTitle = 'Reset your password';
+  static const forgotSubtitle =
+      "Enter your account email and we'll send you a reset link.";
+  static const forgotButton = 'Send reset link';
+  static const forgotSentTitle = 'Check your inbox';
+  static const forgotSentMessage =
+      "If an account exists for that email, we've sent a link to reset your "
+      'password. It may take a minute — check your spam folder too.';
+  static const backToLogin = 'Back to log in';
 }

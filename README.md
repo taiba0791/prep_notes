@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 0 — foundation (navigation shell, placeholder screens) |
+| Status | Phase 1 done — accounts (email + Google), profile, admin owner, account deletion |
 
 ---
 
@@ -117,12 +117,13 @@ flutter test
 cd functions
 npm run lint
 npm run build
-npm run rules:test     # starts emulators, runs security-rules tests, stops them
+npm run rules:test     # security-rules tests
+npm run test:all       # rules + Cloud Functions tests
 cd ..
 ```
 
-> `npm run rules:test` needs the emulator ports free — stop any running
-> `firebase emulators:start` first.
+> These start their own emulators on separate ports (`firebase.test.json`),
+> so they're safe to run while your `firebase emulators:start` is running.
 
 ---
 
@@ -130,7 +131,7 @@ cd ..
 
 ```bash
 firebase deploy --only firestore:rules     # database security rules
-firebase deploy --only storage             # storage rules (needs Blaze + a bucket)
+firebase deploy --only storage             # storage rules
 
 flutter build web
 firebase deploy --only hosting             # the website
@@ -140,7 +141,38 @@ firebase deploy --only functions           # server code (needs Blaze plan)
 
 ---
 
-## 6. Project structure
+## 6. Admins
+
+Admin = the Firebase Auth custom claim `admin: true` (set only on the server).
+
+**Owner (automatic).** Emails in `OWNER_EMAILS` (`functions/src/config.ts`)
+become admin by themselves: sign in with that account (Google, or
+email/password after clicking the verification link) and the
+`onUserProfileWritten` function grants admin within seconds. The app refreshes
+its token automatically, so `/admin` opens without a restart.
+Needs the functions deployed: `firebase deploy --only functions`.
+
+**Backup script** (emulators, or emergencies). Sign up in the app first, then:
+
+```bash
+# Emulators
+npm --prefix functions run bootstrap-admin -- you@example.com --emulator
+
+# Real project — needs a service-account key (Console → Project settings →
+# Service accounts → Generate new private key). Save it OUTSIDE the repo.
+$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\Users\<you>\.secrets\prepnotes-sa.json"
+npm --prefix functions run bootstrap-admin -- you@example.com
+```
+
+Add `--remove` to take admin away. The app picks up the change on its next
+start (it refreshes the token once per launch) or right after re-login.
+
+**More admins:** an existing admin calls the `setAdminClaim` Cloud Function
+(Admin → Users screen, Phase 5). Admins can't remove their own access.
+
+---
+
+## 7. Project structure
 
 ```
 lib/
@@ -166,7 +198,7 @@ firebase.json          Hosting, rules, functions, emulator config
 
 ---
 
-## 7. Security essentials
+## 8. Security essentials
 
 - Clients can **never** write `orders` or `users/{uid}/entitlements` — only Cloud Functions.
 - Private PDFs (`notes_private/…`) are served only via a short-lived signed URL
@@ -179,7 +211,7 @@ firebase.json          Hosting, rules, functions, emulator config
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Problem | Fix |
 |---|---|

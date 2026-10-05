@@ -18,6 +18,13 @@ abstract final class RoutePaths {
   /// Query parameter that remembers where to go back to after login.
   static const fromParam = 'from';
 
+  /// Adds `?from=...` to an auth page so the "go back to" target survives
+  /// switching between Login, Register and Forgot password.
+  static String withFrom(String path, String? from) =>
+      (from == null || from.isEmpty)
+      ? path
+      : Uri(path: path, queryParameters: {fromParam: from}).toString();
+
   // Notes: University → Semester → Subject → Note
   static const notes = '/notes';
   static String university(String universityId) => '/notes/u/$universityId';
@@ -35,6 +42,8 @@ abstract final class RoutePaths {
   static const studentVoice = '/student-voice';
   static const resources = '/resources';
   static const profile = '/profile';
+  static const profileEdit = '/profile/edit';
+  static const profileChangePassword = '/profile/change-password';
 
   // Admin panel
   static const admin = '/admin';

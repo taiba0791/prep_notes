@@ -1,10 +1,27 @@
 rules_version = '2';
 
-// Phase 0: deny everything. Each phase opens exactly what it needs.
+// PrepNotes Storage security rules. Anything not allowed below is DENIED.
+// Paths must match lib/core/constants/storage_paths.dart.
+// Tests: functions/test/rules/storage.test.ts
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if false;
+
+    function signedIn() {
+      return request.auth != null;
     }
+
+    // ── avatars/{uid}/avatar.jpg — public read, owner write ──
+    match /avatars/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn()
+        && request.auth.uid == uid
+        && fileName == 'avatar.jpg'
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // notes_private/**  → NO client access ever (signed URLs via a Function).
+    // notes_public/**, resources/** → opened in Phases 2 and 6.
   }
 }

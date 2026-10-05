@@ -1,10 +1,98 @@
 rules_version = '2';
 
-// Phase 0: deny everything. Each phase opens exactly what it needs.
+// PrepNotes Firestore security rules.
+// Anything not explicitly allowed below is DENIED.
+// Field names must match lib/core/constants/firestore_paths.dart.
+// Tests: functions/test/rules/*.test.ts  (npm --prefix functions run rules:test)
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    // ───────────────────────── Helpers ─────────────────────────
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Admin = custom claim set ONLY by a Cloud Function (setAdminClaim).
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Optional string field: absent, or a string of at most `max` chars.
+    function optionalString(data, field, max) {
+      return !(field in data) || (data[field] is string && data[field].size() <= max);
+    }
+
+    // ───────────────────────── users ─────────────────────────
+
+    match /users/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(uid) && isValidNewProfile();
+      allow update: if isOwner(uid) && isValidProfileUpdate();
+      // Account deletion is done by a Cloud Function (Admin SDK).
+      allow delete: if false;
+
+      function isValidName(name) {
+        return name is string && name.size() >= 2 && name.size() <= 60;
+      }
+
+      function isValidSemester(data) {
+        return !('semester' in data)
+          || (data.semester is int && data.semester >= 1 && data.semester <= 10);
+      }
+
+      function hasValidOptionalFields(data) {
+        return optionalString(data, 'photoUrl', 1024)
+          && optionalString(data, 'universityId', 128)
+          && isValidSemester(data);
+      }
+
+      // New profile: only known fields; a plain student with 0 minutes;
+      // email = the signed-in email; timestamps from the server clock.
+      function isValidNewProfile() {
+        let d = request.resource.data;
+        return d.keys().hasOnly([
+            'name', 'email', 'photoUrl', 'universityId', 'semester',
+            'role', 'totalStudyMinutes', 'createdAt', 'lastLoginAt'])
+          && d.keys().hasAll(['name', 'email', 'role', 'totalStudyMinutes', 'createdAt'])
+          && isValidName(d.name)
+          && d.email == request.auth.token.email
+          && d.role == 'student'
+          && d.totalStudyMinutes == 0
+          && d.createdAt == request.time
+          && (!('lastLoginAt' in d) || d.lastLoginAt == request.time)
+          && hasValidOptionalFields(d);
+      }
+
+      // Update: only editable fields may change. role, email, createdAt and
+      // totalStudyMinutes are locked (study minutes → Cloud Function, Phase 8).
+      function isValidProfileUpdate() {
+        let d = request.resource.data;
+        let changed = d.diff(resource.data).affectedKeys();
+        return changed.hasOnly(['name', 'photoUrl', 'universityId', 'semester', 'lastLoginAt'])
+          && isValidName(d.name)
+          && hasValidOptionalFields(d)
+          && (!('lastLoginAt' in changed) || d.lastLoginAt == request.time);
+      }
+
+      // Purchases: written ONLY by Cloud Functions after payment (Phase 4).
+      match /entitlements/{noteId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // ───────────────────────── catalog ─────────────────────────
+
+    // Public catalog data (profile dropdown, browsing). Admin writes: Phase 2.
+    match /universities/{universityId} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }
