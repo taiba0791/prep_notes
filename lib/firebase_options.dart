@@ -63,13 +63,13 @@ class DefaultFirebaseOptions {
     projectId: 'prepnotes-635d6',
     storageBucket: 'prepnotes-635d6.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyABl9Y3xKrYoaWacwSaDn_wlRYsoqGrVvU',
     appId: '1:803279888682:ios:9a99889f7db6728fd9fe53',
     messagingSenderId: '803279888682',
     projectId: 'prepnotes-635d6',
     storageBucket: 'prepnotes-635d6.firebasestorage.app',
+    androidClientId: '803279888682-tp4mb9kbc1nosden6fja2q2lpqsd852u.apps.googleusercontent.com',
     iosClientId: '803279888682-93jmi00s0p6onnsbhejku6ghucgs37cb.apps.googleusercontent.com',
     iosBundleId: 'com.prepnotes.prepnotes',
   );
