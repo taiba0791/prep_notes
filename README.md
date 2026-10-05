@@ -117,13 +117,13 @@ flutter test
 cd functions
 npm run lint
 npm run build
-npm run rules:test     # starts emulators, runs security-rules tests, stops them
-npm run test:all       # rules + Cloud Functions tests on emulators
+npm run rules:test     # security-rules tests
+npm run test:all       # rules + Cloud Functions tests
 cd ..
 ```
 
-> `npm run rules:test` needs the emulator ports free — stop any running
-> `firebase emulators:start` first.
+> These start their own emulators on separate ports (`firebase.test.json`),
+> so they're safe to run while your `firebase emulators:start` is running.
 
 ---
 
@@ -145,7 +145,14 @@ firebase deploy --only functions           # server code (needs Blaze plan)
 
 Admin = the Firebase Auth custom claim `admin: true` (set only on the server).
 
-**First admin (one time).** Sign up in the app first, then:
+**Owner (automatic).** Emails in `OWNER_EMAILS` (`functions/src/config.ts`)
+become admin by themselves: sign in with that account (Google, or
+email/password after clicking the verification link) and the
+`onUserProfileWritten` function grants admin within seconds. The app refreshes
+its token automatically, so `/admin` opens without a restart.
+Needs the functions deployed: `firebase deploy --only functions`.
+
+**Backup script** (emulators, or emergencies). Sign up in the app first, then:
 
 ```bash
 # Emulators
