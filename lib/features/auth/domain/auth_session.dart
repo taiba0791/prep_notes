@@ -30,4 +30,9 @@ abstract class AuthSession with _$AuthSession {
 
 /// The account returned right after sign-in / sign-up.
 /// `email` is Firebase's stored version (what security rules compare with).
-typedef AuthUser = ({String uid, String? email, String? displayName});
+typedef AuthUser = ({
+  String uid,
+  String? email,
+  String? displayName,
+  String? photoUrl,
+});

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mock_exceptions/mock_exceptions.dart';
 import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_failure.dart';
@@ -100,5 +101,47 @@ void main() {
     final auth = MockFirebaseAuth(signedIn: true, mockUser: MockUser(uid: 'u'));
     await FirebaseAuthRepository(auth).signOut();
     expect(auth.currentUser, isNull);
+  });
+
+  group('Google sign-in (Android/iOS path)', () {
+    test('exchanges the Google ID token for a Firebase login', () async {
+      final auth = MockFirebaseAuth(
+        mockUser: MockUser(
+          uid: 'g1',
+          email: 'taiba@gmail.com',
+          displayName: 'Taiba Shaikh',
+          photoURL: 'https://photo',
+        ),
+      );
+      final repo = FirebaseAuthRepository(
+        auth,
+        googleIdToken: () async => 'fake-google-id-token',
+      );
+
+      final user = await repo.signInWithGoogle();
+      expect(user.uid, 'g1');
+      expect(user.displayName, 'Taiba Shaikh');
+      expect(user.photoUrl, 'https://photo');
+      expect(auth.currentUser, isNotNull);
+    });
+
+    test('closing the account picker becomes AuthFailure.cancelled', () async {
+      final repo = FirebaseAuthRepository(
+        MockFirebaseAuth(),
+        googleIdToken: () async => throw const GoogleSignInException(
+          code: GoogleSignInExceptionCode.canceled,
+        ),
+      );
+      await expectLater(
+        repo.signInWithGoogle(),
+        throwsA(
+          isA<AuthException>().having(
+            (e) => e.failure,
+            'failure',
+            AuthFailure.cancelled,
+          ),
+        ),
+      );
+    });
   });
 }

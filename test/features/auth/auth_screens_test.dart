@@ -107,6 +107,36 @@ void main() {
     });
   });
 
+  group('Google', () {
+    testWidgets('button signs in and saves name + photo to the profile', (
+      tester,
+    ) async {
+      await pump(tester, const LoginScreen(), width: 1200);
+      await tester.tap(find.text(AppStrings.continueWithGoogle));
+      await tester.pumpAndSettle();
+
+      expect(auth.calls, ['google']);
+      final data = (await db.doc(FirestorePaths.user('g-uid')).get()).data()!;
+      expect(data[UserFields.name], 'Google User');
+      expect(data[UserFields.photoUrl], 'https://photo');
+    });
+
+    testWidgets('closing the popup shows no error', (tester) async {
+      await pump(tester, const LoginScreen(), width: 1200);
+      auth.nextError = const AuthException(AuthFailure.cancelled);
+      await tester.tap(find.text(AppStrings.continueWithGoogle));
+      await tester.pumpAndSettle();
+
+      expect(find.text(AppStrings.authErrorCancelled), findsNothing);
+      expect(find.byIcon(Icons.error_outline), findsNothing);
+    });
+
+    testWidgets('Register screen offers Google too', (tester) async {
+      await pump(tester, const RegisterScreen(), width: 1200);
+      expect(find.text(AppStrings.continueWithGoogle), findsOneWidget);
+    });
+  });
+
   group('Register', () {
     Future<void> fill(
       WidgetTester tester, {

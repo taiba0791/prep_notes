@@ -57,6 +57,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(registerControllerProvider);
+    final google = ref.watch(googleSignInControllerProvider);
     final text = Theme.of(context).textTheme;
     final link = TextStyle(
       color: Theme.of(context).colorScheme.primary,
@@ -72,7 +73,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AuthErrorBanner(error: state.error),
+              AuthErrorBanner(error: state.error ?? google.error),
+              GoogleSignInButton(
+                isLoading: google.isLoading,
+                onPressed: () =>
+                    ref.read(googleSignInControllerProvider.notifier).submit(),
+              ),
+              const OrDivider(),
               TextFormField(
                 controller: _name,
                 validator: Validators.name,

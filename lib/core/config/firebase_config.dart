@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../firebase_options.dart';
+
 /// Firebase settings shared by the app.
 abstract final class FirebaseConfig {
   /// Region of our Cloud Functions (same as Firestore: Mumbai).
@@ -13,6 +15,16 @@ abstract final class FirebaseConfig {
   /// `FirebaseFunctions.instance` (that points at us-central1).
   static FirebaseFunctions get functions =>
       FirebaseFunctions.instanceFor(region: functionsRegion);
+
+  /// OAuth "Web client" of the Firebase project (google-services.json,
+  /// client_type 3). Native Google sign-in needs it so Firebase can verify
+  /// the Google ID token. Public identifier — not a secret.
+  static const googleWebClientId =
+      '803279888682-7lk16to87f3rdr2ijpm7fp4lh9ip9s9c.apps.googleusercontent.com';
+
+  /// iOS OAuth client (from `flutterfire configure`).
+  static String? get googleIosClientId =>
+      DefaultFirebaseOptions.ios.iosClientId;
 }
 
 /// Switch the app to the local Firebase Emulator Suite.

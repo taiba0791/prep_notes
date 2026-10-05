@@ -44,7 +44,7 @@ class FakeAuthRepository implements AuthRepository {
     calls.add('register:$email');
     _maybeThrow();
     emit(AuthSession(uid: 'new-uid', email: email));
-    return (uid: 'new-uid', email: email, displayName: name);
+    return (uid: 'new-uid', email: email, displayName: name, photoUrl: null);
   }
 
   @override
@@ -55,7 +55,20 @@ class FakeAuthRepository implements AuthRepository {
     calls.add('signIn:$email');
     _maybeThrow();
     emit(AuthSession(uid: 'uid-$email', email: email, emailVerified: true));
-    return (uid: 'uid-$email', email: email, displayName: null);
+    return (uid: 'uid-$email', email: email, displayName: null, photoUrl: null);
+  }
+
+  @override
+  Future<AuthUser> signInWithGoogle() async {
+    calls.add('google');
+    _maybeThrow();
+    emit(const AuthSession(uid: 'g-uid', email: 'g@gmail.com'));
+    return (
+      uid: 'g-uid',
+      email: 'g@gmail.com',
+      displayName: 'Google User',
+      photoUrl: 'https://photo',
+    );
   }
 
   @override

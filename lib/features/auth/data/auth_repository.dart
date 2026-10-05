@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/config/firebase_config.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../domain/auth_failure.dart';
 import '../domain/auth_session.dart';
@@ -22,6 +25,10 @@ abstract interface class AuthRepository {
 
   Future<AuthUser> signIn({required String email, required String password});
 
+  /// Web: Google popup. Android/iOS: native account picker.
+  /// Throws [AuthException] with [AuthFailure.cancelled] if the user closes it.
+  Future<AuthUser> signInWithGoogle();
+
   Future<void> signOut();
 
   Future<void> sendPasswordReset(String email);
@@ -34,10 +41,15 @@ abstract interface class AuthRepository {
   Future<void> refreshSession();
 }
 
+/// Returns a Google ID token from the native account picker (Android/iOS).
+typedef GoogleIdTokenProvider = Future<String> Function();
+
 class FirebaseAuthRepository implements AuthRepository {
-  FirebaseAuthRepository(this._auth);
+  FirebaseAuthRepository(this._auth, {GoogleIdTokenProvider? googleIdToken})
+    : _googleIdToken = googleIdToken ?? _nativeGoogleIdToken;
 
   final FirebaseAuth _auth;
+  final GoogleIdTokenProvider _googleIdToken;
 
   @override
   Stream<AuthSession> sessionChanges() =>
@@ -66,7 +78,12 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     final user = cred.user!;
     await user.updateDisplayName(name.trim());
-    return (uid: user.uid, email: user.email, displayName: name.trim());
+    return (
+      uid: user.uid,
+      email: user.email,
+      displayName: name.trim(),
+      photoUrl: null,
+    );
   });
 
   @override
@@ -79,11 +96,39 @@ class FirebaseAuthRepository implements AuthRepository {
         return _toAuthUser(cred.user!);
       });
 
-  AuthUser _toAuthUser(User user) =>
-      (uid: user.uid, email: user.email, displayName: user.displayName);
+  @override
+  Future<AuthUser> signInWithGoogle() => _guard(() async {
+    final UserCredential cred;
+    if (kIsWeb) {
+      cred = await _auth.signInWithPopup(GoogleAuthProvider());
+    } else {
+      final idToken = await _googleIdToken();
+      cred = await _auth.signInWithCredential(
+        GoogleAuthProvider.credential(idToken: idToken),
+      );
+    }
+    return _toAuthUser(cred.user!);
+  });
+
+  AuthUser _toAuthUser(User user) => (
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+    photoUrl: user.photoURL,
+  );
 
   @override
-  Future<void> signOut() => _guard(_auth.signOut);
+  Future<void> signOut() => _guard(() async {
+    await _auth.signOut();
+    // Forget the Google account too, so the picker shows next time.
+    if (!kIsWeb && _googleInit != null) {
+      try {
+        await GoogleSignIn.instance.signOut();
+      } on Object {
+        // Not critical.
+      }
+    }
+  });
 
   @override
   Future<void> sendPasswordReset(String email) =>
@@ -102,7 +147,7 @@ class FirebaseAuthRepository implements AuthRepository {
     await user.getIdToken(true); // picks up custom claims → idTokenChanges
   });
 
-  /// Runs [action] and converts Firebase errors into [AuthException].
+  /// Runs [action] and converts Firebase / Google errors into [AuthException].
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();
@@ -110,7 +155,31 @@ class FirebaseAuthRepository implements AuthRepository {
       throw AuthException(AuthFailure.fromCode(e.code));
     } on FirebaseException catch (e) {
       throw AuthException(AuthFailure.fromCode(e.code));
+    } on GoogleSignInException catch (e) {
+      throw AuthException(
+        e.code == GoogleSignInExceptionCode.canceled
+            ? AuthFailure.cancelled
+            : AuthFailure.unknown,
+      );
     }
+  }
+
+  static Future<void>? _googleInit;
+
+  /// Native Google sign-in (google_sign_in 7): initialise once, then show
+  /// the account picker and return the ID token for Firebase.
+  static Future<String> _nativeGoogleIdToken() async {
+    _googleInit ??= GoogleSignIn.instance.initialize(
+      clientId: defaultTargetPlatform == TargetPlatform.iOS
+          ? FirebaseConfig.googleIosClientId
+          : null,
+      serverClientId: FirebaseConfig.googleWebClientId,
+    );
+    await _googleInit;
+    final account = await GoogleSignIn.instance.authenticate();
+    final idToken = account.authentication.idToken;
+    if (idToken == null) throw const AuthException(AuthFailure.unknown);
+    return idToken;
   }
 }
 

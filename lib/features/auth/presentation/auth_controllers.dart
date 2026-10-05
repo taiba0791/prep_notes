@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/errors/error_reporter.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../data/auth_repository.dart';
+import '../domain/auth_failure.dart';
 import '../domain/auth_session.dart';
 
 part 'auth_controllers.g.dart';
@@ -69,6 +70,29 @@ class RegisterController extends _$RegisterController {
 }
 
 @riverpod
+class GoogleSignInController extends _$GoogleSignInController {
+  @override
+  FutureOr<void> build() {}
+
+  Future<void> submit() async {
+    final auth = ref.read(authRepositoryProvider);
+    final profiles = _ProfileHelper(ref);
+
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(() async {
+      final user = await auth.signInWithGoogle();
+      unawaited(profiles.ensureProfile(user));
+    });
+    if (!ref.mounted) return;
+    // Closing the Google popup isn't an error worth showing.
+    final cancelled =
+        result.error is AuthException &&
+        (result.error! as AuthException).failure == AuthFailure.cancelled;
+    state = cancelled ? const AsyncData(null) : result;
+  }
+}
+
+@riverpod
 class ForgotPasswordController extends _$ForgotPasswordController {
   /// State value: true once the reset email was sent.
   @override
@@ -103,6 +127,7 @@ class _ProfileHelper {
         uid: user.uid,
         name: name ?? user.displayName ?? email.split('@').first,
         email: email,
+        photoUrl: user.photoUrl,
       );
       if (!created) await _users.touchLastLogin(user.uid);
     } on Object catch (e, st) {

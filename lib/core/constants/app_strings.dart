@@ -111,6 +111,8 @@ abstract final class AppStrings {
   static const loginTitle = 'Welcome back';
   static const loginSubtitle = 'Log in to access your notes and purchases.';
   static const loginButton = 'Log in';
+  static const continueWithGoogle = 'Continue with Google';
+  static const orDivider = 'or';
   static const forgotPasswordLink = 'Forgot password?';
   static const noAccountPrompt = "Don't have an account?";
   static const createAccountLink = 'Create one';

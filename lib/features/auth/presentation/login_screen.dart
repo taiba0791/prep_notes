@@ -41,6 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(loginControllerProvider);
+    final google = ref.watch(googleSignInControllerProvider);
 
     return AuthCard(
       title: AppStrings.loginTitle,
@@ -51,7 +52,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AuthErrorBanner(error: state.error),
+              AuthErrorBanner(error: state.error ?? google.error),
+              GoogleSignInButton(
+                isLoading: google.isLoading,
+                onPressed: () =>
+                    ref.read(googleSignInControllerProvider.notifier).submit(),
+              ),
+              const OrDivider(),
               EmailField(controller: _email, validator: Validators.email),
               const SizedBox(height: 16),
               PasswordField(

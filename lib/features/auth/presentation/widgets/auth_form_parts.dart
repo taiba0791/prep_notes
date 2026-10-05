@@ -128,6 +128,60 @@ class SubmitButton extends StatelessWidget {
   }
 }
 
+/// "Continue with Google" — Google's branding: official G logo, neutral
+/// outlined button.
+class GoogleSignInButton extends StatelessWidget {
+  const GoogleSignInButton({
+    required this.isLoading,
+    required this.onPressed,
+    super.key,
+  });
+
+  static const logoAsset = 'assets/images/google_g.png';
+
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: isLoading ? null : onPressed,
+      icon: isLoading
+          ? const SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Image.asset(logoAsset, width: 18, height: 18),
+      label: const Text(AppStrings.continueWithGoogle),
+    );
+  }
+}
+
+/// ─── or ─── separator between Google and the email form.
+class OrDivider extends StatelessWidget {
+  const OrDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Row(
+        children: [
+          const Expanded(child: Divider()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              AppStrings.orDivider,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const Expanded(child: Divider()),
+        ],
+      ),
+    );
+  }
+}
+
 /// Friendly error box under a form. Shows nothing for "cancelled".
 class AuthErrorBanner extends StatelessWidget {
   const AuthErrorBanner({required this.error, super.key});
