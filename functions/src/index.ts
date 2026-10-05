@@ -10,6 +10,7 @@ import "./config";
 import * as logger from "firebase-functions/logger";
 import { onRequest } from "firebase-functions/v2/https";
 
+export { deleteMyAccount } from "./account/delete_my_account";
 export { onUserProfileWritten } from "./admin/owner_admin";
 export { setAdminClaim } from "./admin/set_admin_claim";
 

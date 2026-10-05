@@ -15,7 +15,7 @@
     "test:rules": "vitest run test/rules",
     "rules:test": "firebase emulators:exec --config ../firebase.test.json --only firestore,storage \"npm run test:rules\"",
     "test:functions": "vitest run test/functions",
-    "functions:test": "firebase emulators:exec --config ../firebase.test.json --only auth,firestore \"npm run test:functions\"",
+    "functions:test": "firebase emulators:exec --config ../firebase.test.json --only auth,firestore,storage \"npm run test:functions\"",
     "test:all": "firebase emulators:exec --config ../firebase.test.json --only auth,firestore,storage \"vitest run\"",
     "bootstrap-admin": "tsx scripts/bootstrap_admin.ts"
   },

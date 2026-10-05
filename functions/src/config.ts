@@ -22,6 +22,21 @@ export const OWNER_EMAILS: readonly string[] = ["prep.notes247@gmail.com"];
 /** Firestore collection / field names (mirror lib/core/constants/firestore_paths.dart). */
 export const Collections = {
   users: "users",
+  orders: "orders",
+} as const;
+
+export const OrderFields = {
+  userId: "userId",
+  userDeleted: "userDeleted",
+  userDeletedAt: "userDeletedAt",
+} as const;
+
+/** Default Cloud Storage bucket (lib/firebase_options.dart storageBucket). */
+export const STORAGE_BUCKET = "prepnotes-635d6.firebasestorage.app";
+
+/** Mirrors lib/core/constants/storage_paths.dart. */
+export const StoragePaths = {
+  avatarFolder: (uid: string) => `avatars/${uid}/`,
 } as const;
 
 export const UserFields = {

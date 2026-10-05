@@ -1,5 +1,6 @@
 /**
- * Security-rules tests: collections not opened yet are denied for everyone.
+ * Security-rules tests: Firestore collections not opened yet are denied for
+ * everyone. (Storage rules: storage.test.ts.)
  *
  * Run (from the project root):  npm --prefix functions run rules:test
  *
@@ -42,25 +43,5 @@ describe("Firestore: not-yet-opened collections are denied", () => {
     it(`${who} cannot list notes`, async () => {
       await assertFails(ctx().firestore().collection("notes").get());
     });
-  }
-});
-
-describe("Storage: deny all (until Step 1.9)", () => {
-  const files = [
-    "notes_private/n1/file.pdf",
-    "notes_public/n1/thumbnail.jpg",
-    "avatars/student1/avatar.jpg",
-  ];
-
-  for (const [who, ctx] of Object.entries(users)) {
-    for (const path of files) {
-      it(`${who} cannot read ${path}`, async () => {
-        await assertFails(ctx().storage().ref(path).getDownloadURL());
-      });
-
-      it(`${who} cannot upload to ${path}`, async () => {
-        await assertFails(ctx().storage().ref(path).putString("x"));
-      });
-    }
   }
 });
