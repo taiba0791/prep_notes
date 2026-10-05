@@ -54,6 +54,30 @@ abstract final class AppStrings {
   static const pageAdminResources = 'Admin · Resources';
   static const pageAdminStudentVoice = 'Admin · Student Voice';
 
+  // Auth errors (shown on login / register / password screens)
+  static const authErrorInvalidCredential =
+      'Email or password is incorrect. Please try again.';
+  static const authErrorEmailInUse =
+      'An account with this email already exists. Try logging in instead.';
+  static const authErrorWeakPassword =
+      'That password is too weak. Use at least 8 characters.';
+  static const authErrorInvalidEmail = 'Please enter a valid email address.';
+  static const authErrorUserDisabled =
+      'This account has been disabled. Please contact support.';
+  static const authErrorTooManyRequests =
+      'Too many attempts. Please wait a few minutes and try again.';
+  static const authErrorNetwork =
+      'No internet connection. Check your network and try again.';
+  static const authErrorRequiresRecentLogin =
+      'For your security, please log in again and then retry.';
+  static const authErrorAccountExists =
+      'This email is already linked to another sign-in method. '
+      'Log in with that method first.';
+  static const authErrorProviderDisabled =
+      'This sign-in method is not available right now.';
+  static const authErrorCancelled = 'Sign-in was cancelled.';
+  static const authErrorUnknown = 'Something went wrong. Please try again.';
+
   // DEBUG-only sign-in shortcuts (removed in Phase 1)
   static const debugSignInStudent = 'Continue as student (debug)';
   static const debugSignInAdmin = 'Continue as admin (debug)';
