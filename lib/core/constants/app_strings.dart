@@ -126,6 +126,90 @@ abstract final class AppStrings {
       'Universities will appear here soon. You can set it later.';
   static const profileSaved = 'Profile saved.';
 
+  // ── Admin ──────────────────────────────────────────────
+  static const adminTitle = 'Admin';
+  static const adminBackToSite = 'Back to site';
+  static const adminDashboard = 'Dashboard';
+  static const adminUniversities = 'Universities';
+  static const adminSemesters = 'Semesters';
+  static const adminSubjects = 'Subjects';
+  static const adminModules = 'Modules';
+  static const adminNotes = 'Notes';
+  static const adminUsers = 'Users';
+  static const adminOrders = 'Orders';
+  static const adminResources = 'Resources';
+  static const adminStudentVoice = 'Student Voice';
+  static const adminDashboardSoon =
+      'Live numbers and charts arrive in Phase 5.';
+  static const adminStatStudents = 'Students';
+  static const adminStatNotes = 'Notes';
+  static const adminStatPurchases = 'Purchases';
+  static const adminStatRevenue = 'Revenue';
+
+  static const add = 'Add';
+  static const edit = 'Edit';
+  static const delete = 'Delete';
+  static const active = 'Active';
+  static const inactive = 'Inactive';
+  static const searchHint = 'Search';
+  static const loadMore = 'Load more';
+  static const actions = 'Actions';
+  static const required = 'Required';
+  static const saved = 'Saved.';
+  static const deleted = 'Deleted.';
+  static String deleteConfirmTitle(String what) => 'Delete "$what"?';
+  static const deleteConfirmMessage = 'This cannot be undone.';
+  static String inUse(String children) =>
+      "Can't delete: it still has $children. Delete or move those first.";
+
+  static const pickUniversity = 'Choose a university';
+  static const pickSemester = 'Choose a semester';
+  static const pickSubject = 'Choose a subject';
+  static const pickModule = 'Choose a module';
+  static const anyOption = 'All';
+  static const nothingHereYet = 'Nothing here yet';
+  static const addFirstItem = 'Use “Add” to create the first one.';
+  static const chooseParentFirst = 'Choose the filters above to see items.';
+
+  static const fieldShortName = 'Short name (e.g. MU)';
+  static const fieldCity = 'City';
+  static const fieldDescription = 'Description';
+  static const fieldOrder = 'Sort order';
+  static const fieldNumber = 'Number';
+  static const fieldTitle = 'Title';
+  static const fieldCode = 'Code (optional)';
+  static const fieldLogo = 'Logo';
+  static const chooseImage = 'Choose image';
+  static const imageTooLarge = 'Image is too large.';
+  static const mustBeNumber = 'Enter a whole number.';
+
+  // Admin · notes
+  static const newNote = 'New note';
+  static const editNote = 'Edit note';
+  static const fieldPrice = 'Price (₹)';
+  static const fieldFree = 'Free note';
+  static const fieldTags = 'Tags (comma separated)';
+  static const fieldPreviewPages = 'Free preview pages';
+  static const fieldPublished = 'Published (visible to students)';
+  static const publishNeedsPdf = 'Upload the PDF before publishing.';
+  static const fieldThumbnail = 'Thumbnail';
+  static const fieldPdf = 'Notes PDF';
+  static const choosePdf = 'Choose PDF';
+  static const replacePdf = 'Replace PDF';
+  static const pdfAttached = 'PDF attached';
+  static const pdfTooLarge = 'PDF is too large (max 50 MB).';
+  static const invalidPrice = 'Enter a price like 149 or 149.50.';
+  static const priceMustBePositive = 'A paid note needs a price above ₹0.';
+  static const uploading = 'Uploading…';
+  static const draft = 'Draft';
+  static const published = 'Published';
+  static const free = 'Free';
+  static String pages(int n) => '$n pages';
+  static String noteContext(String uni, int sem, String subject) =>
+      '$uni · Sem $sem · $subject';
+  static const noteSaveFailed =
+      "Couldn't save the note. Your draft is kept — try again.";
+
   // Profile photo
   static const changePhoto = 'Change profile photo';
   static const photoFromGallery = 'Choose from gallery';

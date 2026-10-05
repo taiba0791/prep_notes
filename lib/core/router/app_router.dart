@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/admin/presentation/admin_dashboard_page.dart';
+import '../../features/admin/presentation/admin_scaffold.dart';
+import '../../features/admin/presentation/catalog_pages.dart';
+import '../../features/admin/presentation/notes_admin_pages.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
@@ -153,36 +157,61 @@ GoRouter appRouter(Ref ref) {
       // Checkout (full screen)
       _page('/checkout/:noteId', AppStrings.pageCheckout),
 
-      // Admin panel (Phase 2 adds its own side-navigation shell)
-      GoRoute(
-        path: RoutePaths.admin,
-        builder: (context, state) =>
-            const PlaceholderScreen(title: AppStrings.pageAdminDashboard),
+      // Admin panel: its own shell (dark side menu), guarded by adminGuard.
+      ShellRoute(
+        builder: (context, state, child) =>
+            AdminScaffold(currentPath: state.uri.path, child: child),
         routes: [
-          _page('universities', AppStrings.pageAdminUniversities),
-          _page('semesters', AppStrings.pageAdminSemesters),
-          _page('subjects', AppStrings.pageAdminSubjects),
-          _page('modules', AppStrings.pageAdminModules),
-          _page(
-            'notes',
-            AppStrings.pageAdminNotes,
+          GoRoute(
+            path: RoutePaths.admin,
+            builder: (context, state) => const AdminDashboardPage(),
             routes: [
-              _page('new', AppStrings.pageAdminNoteNew),
-              _page(':noteId/edit', AppStrings.pageAdminNoteEdit),
+              GoRoute(
+                path: 'universities',
+                builder: (context, state) => const AdminUniversitiesPage(),
+              ),
+              GoRoute(
+                path: 'semesters',
+                builder: (context, state) => const AdminSemestersPage(),
+              ),
+              GoRoute(
+                path: 'subjects',
+                builder: (context, state) => const AdminSubjectsPage(),
+              ),
+              GoRoute(
+                path: 'modules',
+                builder: (context, state) => const AdminModulesPage(),
+              ),
+              GoRoute(
+                path: 'notes',
+                builder: (context, state) => const AdminNotesPage(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => const AdminNoteFormPage(),
+                  ),
+                  GoRoute(
+                    path: ':noteId/edit',
+                    builder: (context, state) => AdminNoteFormPage(
+                      noteId: state.pathParameters['noteId'],
+                    ),
+                  ),
+                ],
+              ),
+              _page(
+                'users',
+                AppStrings.pageAdminUsers,
+                routes: [_page(':uid', AppStrings.pageAdminUser)],
+              ),
+              _page(
+                'orders',
+                AppStrings.pageAdminOrders,
+                routes: [_page(':orderId', AppStrings.pageAdminOrder)],
+              ),
+              _page('resources', AppStrings.pageAdminResources),
+              _page('student-voice', AppStrings.pageAdminStudentVoice),
             ],
           ),
-          _page(
-            'users',
-            AppStrings.pageAdminUsers,
-            routes: [_page(':uid', AppStrings.pageAdminUser)],
-          ),
-          _page(
-            'orders',
-            AppStrings.pageAdminOrders,
-            routes: [_page(':orderId', AppStrings.pageAdminOrder)],
-          ),
-          _page('resources', AppStrings.pageAdminResources),
-          _page('student-voice', AppStrings.pageAdminStudentVoice),
         ],
       ),
     ],

@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 1 done — accounts (email + Google), profile, admin owner, account deletion |
+| Status | Phase 2 done — design system, admin panel: catalog + notes with PDF upload |
 
 ---
 
@@ -144,6 +144,14 @@ firebase deploy --only functions           # server code (needs Blaze plan)
 ## 6. Admins
 
 Admin = the Firebase Auth custom claim `admin: true` (set only on the server).
+
+**Sample data (catalog + 5 notes with PDFs):**
+
+```bash
+npm --prefix functions run seed -- --emulator     # emulators (start them first)
+# Real project: set GOOGLE_APPLICATION_CREDENTIALS (see below), then
+npm --prefix functions run seed
+```
 
 **Owner (automatic).** Emails in `OWNER_EMAILS` (`functions/src/config.ts`)
 become admin by themselves: sign in with that account (Google, or
