@@ -37,6 +37,9 @@ abstract interface class UserRepository {
 
   /// Records "last seen" after each sign-in.
   Future<void> touchLastLogin(String uid);
+
+  /// Clears the profile photo field.
+  Future<void> removePhoto(String uid);
 }
 
 class FirestoreUserRepository implements UserRepository {
@@ -104,6 +107,10 @@ class FirestoreUserRepository implements UserRepository {
   @override
   Future<void> touchLastLogin(String uid) =>
       _doc(uid).update({UserFields.lastLoginAt: FieldValue.serverTimestamp()});
+
+  @override
+  Future<void> removePhoto(String uid) =>
+      _doc(uid).update({UserFields.photoUrl: FieldValue.delete()});
 }
 
 @Riverpod(keepAlive: true)

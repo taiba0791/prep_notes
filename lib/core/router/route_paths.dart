@@ -43,6 +43,7 @@ abstract final class RoutePaths {
   static const resources = '/resources';
   static const profile = '/profile';
   static const profileEdit = '/profile/edit';
+  static const profileChangePassword = '/profile/change-password';
 
   // Admin panel
   static const admin = '/admin';

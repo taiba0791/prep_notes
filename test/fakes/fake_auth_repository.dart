@@ -88,4 +88,26 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> refreshSession() async => calls.add('refresh');
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    calls.add('changePassword:$currentPassword->$newPassword');
+    _maybeThrow();
+  }
+
+  @override
+  Future<void> reauthenticate({String? password}) async {
+    calls.add('reauth:${password ?? 'google'}');
+    _maybeThrow();
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    calls.add('deleteAccount');
+    _maybeThrow();
+    emit(AuthSession.guest);
+  }
 }

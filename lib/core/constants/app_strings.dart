@@ -123,6 +123,35 @@ abstract final class AppStrings {
       'Universities will appear here soon. You can set it later.';
   static const profileSaved = 'Profile saved.';
 
+  // Profile photo
+  static const changePhoto = 'Change profile photo';
+  static const photoFromGallery = 'Choose from gallery';
+  static const photoFromCamera = 'Take a photo';
+  static const photoRemove = 'Remove photo';
+  static const photoUpdated = 'Profile photo updated.';
+  static const photoRemoved = 'Profile photo removed.';
+  static const photoTooLarge = 'That photo is too large. Please pick another.';
+  static const photoFailed = "Couldn't update your photo. Please try again.";
+
+  // Change password
+  static const changePassword = 'Change password';
+  static const fieldCurrentPassword = 'Current password';
+  static const fieldNewPasswordShort = 'New password';
+  static const passwordChanged = 'Password changed.';
+
+  // Delete account
+  static const deleteAccount = 'Delete account';
+  static const deleteAccountTitle = 'Delete your account?';
+  static const deleteAccountMessage =
+      'This permanently deletes your profile, photo, purchases access and '
+      'study history. It cannot be undone.\n\n'
+      'Order records are kept (without personal details) for accounting.';
+  static const deleteAccountPasswordHint = 'Enter your password to confirm.';
+  static const deleteAccountGoogleHint =
+      "You'll be asked to sign in with Google again to confirm.";
+  static const deleteAccountConfirm = 'Delete permanently';
+  static const accountDeleted = 'Your account has been deleted.';
+
   // Form validation
   static const validationEmailRequired = 'Please enter your email.';
   static const validationEmailInvalid = 'Please enter a valid email address.';

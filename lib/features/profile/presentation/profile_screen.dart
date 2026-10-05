@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/router/route_paths.dart';
+import '../../../core/services/photo_picker.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/theme_mode_button.dart';
@@ -14,6 +16,8 @@ import '../../../data/repositories/university_repository.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/current_user_providers.dart';
 import '../../auth/domain/auth_session.dart';
+import 'account_controllers.dart';
+import 'delete_account_dialog.dart';
 import 'profile_controllers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -78,7 +82,7 @@ class _ProfileContent extends ConsumerWidget {
             const SizedBox(height: 16),
             _StatsGrid(profile: profile, columns: columns),
             const SizedBox(height: 16),
-            _Links(isAdmin: session.isAdmin),
+            _Links(session: session),
           ],
         ),
       ),
@@ -99,7 +103,7 @@ class _Header extends StatelessWidget {
 
     return Row(
       children: [
-        UserAvatar(initials: profile.initials, photoUrl: profile.photoUrl),
+        _EditableAvatar(profile: profile),
         const SizedBox(width: 20),
         Expanded(
           child: Column(
@@ -131,6 +135,106 @@ class _Header extends StatelessWidget {
     );
   }
 }
+
+/// Avatar with a small camera badge. Tap → gallery / camera / remove.
+class _EditableAvatar extends ConsumerWidget {
+  const _EditableAvatar({required this.profile});
+
+  final UserProfile profile;
+
+  Future<void> _openMenu(BuildContext context, WidgetRef ref) async {
+    final controller = ref.read(avatarControllerProvider.notifier);
+    final hasPhoto = profile.photoUrl?.isNotEmpty ?? false;
+
+    final choice = await showModalBottomSheet<_PhotoAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text(AppStrings.photoFromGallery),
+              onTap: () => Navigator.pop(context, _PhotoAction.gallery),
+            ),
+            if (!kIsWeb)
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text(AppStrings.photoFromCamera),
+                onTap: () => Navigator.pop(context, _PhotoAction.camera),
+              ),
+            if (hasPhoto)
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: const Text(AppStrings.photoRemove),
+                onTap: () => Navigator.pop(context, _PhotoAction.remove),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    switch (choice) {
+      case _PhotoAction.gallery:
+        await controller.change(profile.uid, PhotoSource.gallery);
+      case _PhotoAction.camera:
+        await controller.change(profile.uid, PhotoSource.camera);
+      case _PhotoAction.remove:
+        await controller.remove(profile.uid);
+      case null:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(avatarControllerProvider);
+    final scheme = Theme.of(context).colorScheme;
+
+    ref.listen(avatarControllerProvider, (_, next) {
+      final message = next.isLoading ? null : next.value;
+      if (message != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+    });
+
+    return Tooltip(
+      message: AppStrings.changePhoto,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: state.isLoading ? null : () => _openMenu(context, ref),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            UserAvatar(initials: profile.initials, photoUrl: profile.photoUrl),
+            if (state.isLoading)
+              const SizedBox.square(
+                dimension: 80,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: CircleAvatar(
+                radius: 14,
+                backgroundColor: scheme.primary,
+                child: Icon(
+                  Icons.photo_camera,
+                  size: 16,
+                  color: scheme.onPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+enum _PhotoAction { gallery, camera, remove }
 
 class _VerifyEmailBanner extends ConsumerWidget {
   const _VerifyEmailBanner();
@@ -349,9 +453,26 @@ class _StatTile extends StatelessWidget {
 }
 
 class _Links extends ConsumerWidget {
-  const _Links({required this.isAdmin});
+  const _Links({required this.session});
 
-  final bool isAdmin;
+  final AuthSession session;
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    // Grab these now: once the account is gone the router leaves this page,
+    // so this widget's context won't be usable any more.
+    final router = GoRouter.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    await showDeleteAccountDialog(
+      context,
+      hasPassword: session.hasPassword,
+      onDeleted: () {
+        router.go(RoutePaths.home);
+        messenger.showSnackBar(
+          const SnackBar(content: Text(AppStrings.accountDeleted)),
+        );
+      },
+    );
+  }
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
@@ -386,13 +507,22 @@ class _Links extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.go(RoutePaths.purchases),
           ),
-          if (isAdmin) ...[
+          if (session.isAdmin) ...[
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.admin_panel_settings_outlined),
               title: const Text(AppStrings.linkAdminPanel),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.go(RoutePaths.admin),
+            ),
+          ],
+          if (session.hasPassword) ...[
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.password),
+              title: const Text(AppStrings.changePassword),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go(RoutePaths.profileChangePassword),
             ),
           ],
           const Divider(height: 1),
@@ -403,6 +533,15 @@ class _Links extends ConsumerWidget {
               style: TextStyle(color: scheme.error),
             ),
             onTap: () => _confirmSignOut(context, ref),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(Icons.delete_forever_outlined, color: scheme.error),
+            title: Text(
+              AppStrings.deleteAccount,
+              style: TextStyle(color: scheme.error),
+            ),
+            onTap: () => _deleteAccount(context),
           ),
         ],
       ),

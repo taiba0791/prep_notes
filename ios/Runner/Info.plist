@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PrepNotes uses your photos only to set your profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PrepNotes uses the camera only to take your profile picture.</string>
 </dict>
 </plist>

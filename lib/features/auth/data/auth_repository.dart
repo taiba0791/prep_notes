@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -39,17 +40,42 @@ abstract interface class AuthRepository {
   /// Re-reads the ID token from the server so a newly granted admin claim or
   /// a just-verified email shows up immediately.
   Future<void> refreshSession();
+
+  /// Email/password accounts only. Firebase requires the current password
+  /// to be confirmed first.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+
+  /// Proves it's really the user before a sensitive action: with their
+  /// password (email accounts) or Google again (Google accounts).
+  Future<void> reauthenticate({String? password});
+
+  /// Permanently deletes the account (server-side; see deleteMyAccount).
+  /// Call [reauthenticate] first. Signs out afterwards.
+  Future<void> deleteAccount();
 }
 
 /// Returns a Google ID token from the native account picker (Android/iOS).
 typedef GoogleIdTokenProvider = Future<String> Function();
 
+/// Calls the `deleteMyAccount` Cloud Function.
+typedef DeleteAccountCall = Future<void> Function();
+
 class FirebaseAuthRepository implements AuthRepository {
-  FirebaseAuthRepository(this._auth, {GoogleIdTokenProvider? googleIdToken})
-    : _googleIdToken = googleIdToken ?? _nativeGoogleIdToken;
+  FirebaseAuthRepository(
+    this._auth, {
+    GoogleIdTokenProvider? googleIdToken,
+    DeleteAccountCall? deleteAccountCall,
+  }) : _googleIdToken = googleIdToken ?? _nativeGoogleIdToken,
+       _deleteAccountCall = deleteAccountCall ?? _callDeleteMyAccount;
 
   final FirebaseAuth _auth;
   final GoogleIdTokenProvider _googleIdToken;
+  final DeleteAccountCall _deleteAccountCall;
+
+  static const _passwordProvider = 'password';
 
   @override
   Stream<AuthSession> sessionChanges() =>
@@ -79,6 +105,9 @@ class FirebaseAuthRepository implements AuthRepository {
       email: user.email,
       emailVerified: user.emailVerified,
       isAdmin: token.claims?['admin'] == true,
+      hasPassword: user.providerData.any(
+        (p) => p.providerId == _passwordProvider,
+      ),
     );
   }
 
@@ -118,13 +147,13 @@ class FirebaseAuthRepository implements AuthRepository {
     if (kIsWeb) {
       cred = await _auth.signInWithPopup(GoogleAuthProvider());
     } else {
-      final idToken = await _googleIdToken();
-      cred = await _auth.signInWithCredential(
-        GoogleAuthProvider.credential(idToken: idToken),
-      );
+      cred = await _auth.signInWithCredential(await _googleCredential());
     }
     return _toAuthUser(cred.user!);
   });
+
+  Future<AuthCredential> _googleCredential() async =>
+      GoogleAuthProvider.credential(idToken: await _googleIdToken());
 
   AuthUser _toAuthUser(User user) => (
     uid: user.uid,
@@ -163,6 +192,64 @@ class FirebaseAuthRepository implements AuthRepository {
     await user.getIdToken(true); // picks up custom claims → idTokenChanges
   });
 
+  User get _signedInUser {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthException(AuthFailure.requiresRecentLogin);
+    }
+    return user;
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => _guard(() async {
+    final user = _signedInUser;
+    await user.reauthenticateWithCredential(
+      EmailAuthProvider.credential(
+        email: user.email ?? '',
+        password: currentPassword,
+      ),
+    );
+    await user.updatePassword(newPassword);
+  });
+
+  @override
+  Future<void> reauthenticate({String? password}) => _guard(() async {
+    final user = _signedInUser;
+    final usesPassword = user.providerData.any(
+      (p) => p.providerId == _passwordProvider,
+    );
+    if (usesPassword && password != null) {
+      await user.reauthenticateWithCredential(
+        EmailAuthProvider.credential(
+          email: user.email ?? '',
+          password: password,
+        ),
+      );
+    } else if (kIsWeb) {
+      await user.reauthenticateWithPopup(GoogleAuthProvider());
+    } else {
+      await user.reauthenticateWithCredential(await _googleCredential());
+    }
+  });
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+    try {
+      await _deleteAccountCall();
+    } on FirebaseFunctionsException catch (e) {
+      throw AuthException(
+        e.code == 'failed-precondition'
+            ? AuthFailure.requiresRecentLogin
+            : AuthFailure.fromCode(e.code),
+      );
+    }
+    // The account no longer exists on the server; clear it locally.
+    await signOut();
+  });
+
   /// Runs [action] and converts Firebase / Google errors into [AuthException].
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
@@ -197,11 +284,24 @@ class FirebaseAuthRepository implements AuthRepository {
     if (idToken == null) throw const AuthException(AuthFailure.unknown);
     return idToken;
   }
+
+  static Future<void> _callDeleteMyAccount() async {
+    await FirebaseConfig.functions
+        .httpsCallable('deleteMyAccount')
+        .call<void>();
+  }
 }
 
 @Riverpod(keepAlive: true)
-AuthRepository authRepository(Ref ref) =>
-    FirebaseAuthRepository(ref.watch(firebaseAuthProvider));
+AuthRepository authRepository(Ref ref) {
+  final functions = ref.watch(functionsProvider);
+  return FirebaseAuthRepository(
+    ref.watch(firebaseAuthProvider),
+    deleteAccountCall: () async {
+      await functions.httpsCallable('deleteMyAccount').call<void>();
+    },
+  );
+}
 
 /// The live [AuthSession]. Loading until Firebase restores the session.
 @Riverpod(keepAlive: true)

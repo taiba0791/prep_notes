@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:prepnotes/app.dart';
 import 'package:prepnotes/core/constants/app_strings.dart';
+import 'package:prepnotes/core/constants/firestore_paths.dart';
 import 'package:prepnotes/core/router/app_router.dart';
 import 'package:prepnotes/core/router/route_paths.dart';
 import 'package:prepnotes/data/repositories/user_repository.dart';
@@ -20,6 +21,7 @@ void main() {
   late ProviderContainer container;
   late GoRouter router;
   late FakeAuthRepository auth;
+  late FakeFirebaseFirestore db;
 
   const student = AuthSession(uid: 'student1');
   const admin = AuthSession(uid: 'admin1', isAdmin: true);
@@ -30,7 +32,7 @@ void main() {
       overrides: [
         authRepositoryProvider.overrideWithValue(auth),
         userRepositoryProvider.overrideWithValue(
-          FirestoreUserRepository(FakeFirebaseFirestore()),
+          FirestoreUserRepository(db = FakeFirebaseFirestore()),
         ),
       ],
     );
@@ -120,5 +122,30 @@ void main() {
     await tester.tap(find.text(AppStrings.signOut));
     await tester.pumpAndSettle();
     expect(location(), '/login?from=%2Fprofile');
+  });
+
+  testWidgets('deleting the account lands on Home with a message', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpApp(tester);
+    await db.doc(FirestorePaths.user('student1')).set({
+      UserFields.name: 'Student One',
+      UserFields.email: 's1@x.com',
+    });
+    auth.emit(student);
+    await tester.pumpAndSettle();
+    await go(tester, RoutePaths.profile);
+
+    await tester.tap(find.text(AppStrings.deleteAccount));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(AppStrings.deleteAccountConfirm));
+    await tester.pumpAndSettle();
+
+    expect(auth.calls, contains('deleteAccount'));
+    expect(location(), RoutePaths.home);
+    expect(find.text(AppStrings.accountDeleted), findsOneWidget);
   });
 }

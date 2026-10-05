@@ -16,6 +16,10 @@ abstract class AuthSession with _$AuthSession {
     @Default(false) bool emailVerified,
     @Default(false) bool isAdmin,
 
+    /// Signed up with email + password (can change password). False for
+    /// Google-only accounts.
+    @Default(false) bool hasPassword,
+
     /// True only while Firebase restores the session at app start.
     @Default(false) bool isLoading,
   }) = _AuthSession;

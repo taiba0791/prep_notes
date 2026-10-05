@@ -8,6 +8,7 @@ import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/profile/presentation/change_password_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../constants/app_strings.dart';
@@ -120,6 +121,10 @@ GoRouter appRouter(Ref ref) {
                   GoRoute(
                     path: 'edit',
                     builder: (context, state) => const EditProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'change-password',
+                    builder: (context, state) => const ChangePasswordScreen(),
                   ),
                 ],
               ),
