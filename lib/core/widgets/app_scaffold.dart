@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../constants/app_strings.dart';
 import '../utils/responsive.dart';
 import 'app_logo.dart';
+import 'theme_mode_button.dart';
 
 /// One item in the main navigation.
 class AppDestination {
@@ -109,6 +110,15 @@ class AppScaffold extends StatelessWidget {
               leading: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: AppLogo(showName: extended),
+              ),
+              trailing: const Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: ThemeModeButton(),
+                  ),
+                ),
               ),
               destinations: [
                 for (final d in appDestinations)

@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'app.dart';
 import 'core/config/firebase_config.dart';
 import 'core/errors/error_reporter.dart';
+import 'core/theme/theme_mode_controller.dart';
 import 'firebase_options.dart';
 
 /// App start-up, in order:
@@ -47,9 +48,15 @@ void main() {
         return true;
       };
 
+      // The saved light/dark choice, read before the first frame.
+      final themeMode = await ThemeModeStorage.load();
+
       runApp(
         ProviderScope(
-          overrides: [errorReporterProvider.overrideWithValue(reporter)],
+          overrides: [
+            errorReporterProvider.overrideWithValue(reporter),
+            initialThemeModeProvider.overrideWithValue(themeMode),
+          ],
           child: const PrepNotesApp(),
         ),
       );

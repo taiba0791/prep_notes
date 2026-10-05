@@ -15,6 +15,8 @@ abstract final class AppStrings {
   static const comingSoon = 'Coming soon';
   static const goHome = 'Go to Home';
   static const emulatorBanner = 'EMULATOR';
+  static const switchToDark = 'Switch to dark mode';
+  static const switchToLight = 'Switch to light mode';
 
   // 404
   static const notFoundTitle = 'Page not found';

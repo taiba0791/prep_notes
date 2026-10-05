@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/app_logo.dart';
+import '../../../../core/widgets/theme_mode_button.dart';
 
 /// Shared layout for login / register / forgot-password:
 /// - mobile: full-width form on the page background,
@@ -45,21 +46,26 @@ class AuthCard extends StatelessWidget {
           ? scheme.surface
           : scheme.surfaceContainerHighest,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(context.pagePadding),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: maxWidth),
-              child: isMobile
-                  ? content
-                  : Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: content,
-                      ),
-                    ),
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(context.pagePadding),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: maxWidth),
+                  child: isMobile
+                      ? content
+                      : Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: content,
+                          ),
+                        ),
+                ),
+              ),
             ),
-          ),
+            const Positioned(top: 8, right: 8, child: ThemeModeButton()),
+          ],
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../constants/app_strings.dart';
 import '../utils/responsive.dart';
+import 'theme_mode_button.dart';
 
 /// Temporary page used for every route until its real screen is built.
 /// Shows the page title, any URL parameters, and optional extra [actions].
@@ -23,7 +24,11 @@ class PlaceholderScreen extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        // On tablet/desktop the switch lives in the side rail instead.
+        actions: [if (context.isMobile) const ThemeModeButton()],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(context.pagePadding),
