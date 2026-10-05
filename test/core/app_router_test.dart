@@ -116,6 +116,7 @@ void main() {
     await go(tester, RoutePaths.profile);
     expect(location(), RoutePaths.profile);
 
+    // No profile document in the fake DB → "setting up" view with Log out.
     await tester.tap(find.text(AppStrings.signOut));
     await tester.pumpAndSettle();
     expect(location(), '/login?from=%2Fprofile');

@@ -73,4 +73,6 @@ export async function handleSetAdminClaim(
   return { uid: target.uid, email: target.email ?? email, admin };
 }
 
-export const setAdminClaim = onCall(handleSetAdminClaim);
+// "public" = anyone may *reach* the function (needed for apps to call it);
+// handleSetAdminClaim itself rejects anyone who isn't a signed-in admin.
+export const setAdminClaim = onCall({ invoker: "public" }, handleSetAdminClaim);

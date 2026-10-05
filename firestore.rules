@@ -86,5 +86,13 @@ service cloud.firestore {
         allow write: if false;
       }
     }
+
+    // ───────────────────────── catalog ─────────────────────────
+
+    // Public catalog data (profile dropdown, browsing). Admin writes: Phase 2.
+    match /universities/{universityId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

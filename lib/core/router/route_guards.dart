@@ -4,7 +4,10 @@ import 'route_paths.dart';
 /// Pages that need a signed-in user.
 bool requiresSignIn(String path) {
   if (requiresAdmin(path)) return true;
-  if (path == RoutePaths.profile || path == RoutePaths.purchases) return true;
+  if (path == RoutePaths.profile || path.startsWith('${RoutePaths.profile}/')) {
+    return true;
+  }
+  if (path == RoutePaths.purchases) return true;
   if (path.startsWith('/checkout/')) return true;
   // The PDF viewer (/notes/:noteId/view) needs a signed-in buyer.
   final segments = Uri.parse(path).pathSegments;

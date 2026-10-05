@@ -42,6 +42,7 @@ abstract final class RoutePaths {
   static const studentVoice = '/student-voice';
   static const resources = '/resources';
   static const profile = '/profile';
+  static const profileEdit = '/profile/edit';
 
   // Admin panel
   static const admin = '/admin';

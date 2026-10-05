@@ -83,6 +83,46 @@ abstract final class AppStrings {
   // Account
   static const signOut = 'Log out';
 
+  // Common states
+  static const errorTitle = "Couldn't load this";
+  static const errorMessage =
+      'Please check your internet connection and try again.';
+  static const retry = 'Try again';
+  static const cancel = 'Cancel';
+  static const save = 'Save';
+  static const notSet = 'Not set';
+
+  // Profile
+  static const profileSettingUpTitle = 'Setting up your profile…';
+  static const profileSettingUpMessage =
+      'This only takes a moment after you sign up.';
+  static const adminBadge = 'Admin';
+  static const verifyEmailTitle = 'Please verify your email';
+  static const verifyEmailMessage =
+      "We sent a link to your inbox. You'll need it before buying notes.";
+  static const verifyEmailResend = 'Resend email';
+  static const verifyEmailDone = "I've verified";
+  static const verifyEmailSent = 'Verification email sent.';
+  static const editProfile = 'Edit profile';
+  static const fieldUniversity = 'University';
+  static const fieldSemester = 'Semester';
+  static String semesterLabel(int n) => 'Semester $n';
+  static const statPurchases = 'Purchases';
+  static const statStudyTime = 'Study time';
+  static const statRecentlyViewed = 'Recently viewed';
+  static String studyMinutes(int minutes) =>
+      minutes < 60 ? '$minutes min' : '${minutes ~/ 60} h ${minutes % 60} min';
+  static const linkMyPurchases = 'My purchases';
+  static const linkAdminPanel = 'Admin panel';
+  static const signOutConfirmTitle = 'Log out?';
+  static const signOutConfirmMessage =
+      "You'll need to log in again to see your purchases.";
+  static const universitiesUnavailable =
+      "Couldn't load universities. You can set it later.";
+  static const noUniversitiesYet =
+      'Universities will appear here soon. You can set it later.';
+  static const profileSaved = 'Profile saved.';
+
   // Form validation
   static const validationEmailRequired = 'Please enter your email.';
   static const validationEmailInvalid = 'Please enter a valid email address.';

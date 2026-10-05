@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,6 +8,8 @@ import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/profile/presentation/edit_profile_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../constants/app_strings.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/not_found_screen.dart';
@@ -114,10 +115,13 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.profile,
-                builder: (context, state) => const PlaceholderScreen(
-                  title: AppStrings.navProfile,
-                  actions: [_SignOutButton()],
-                ),
+                builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (context, state) => const EditProfileScreen(),
+                  ),
+                ],
               ),
               _page(RoutePaths.purchases, AppStrings.pagePurchases),
             ],
@@ -199,17 +203,4 @@ GoRoute _page(
         PlaceholderScreen(title: title, params: state.pathParameters),
     routes: routes,
   );
-}
-
-/// Temporary until the Profile screen (Step 1.8).
-class _SignOutButton extends ConsumerWidget {
-  const _SignOutButton();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return OutlinedButton(
-      onPressed: () => ref.read(authRepositoryProvider).signOut(),
-      child: const Text(AppStrings.signOut),
-    );
-  }
 }

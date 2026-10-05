@@ -22,7 +22,6 @@ const users = {
 describe("Firestore: not-yet-opened collections are denied", () => {
   const docs = [
     "notes/n1", // Phase 2
-    "universities/u1", // Phase 2
     "orders/o1", // Phase 4
     "feedback/f1", // Phase 7
     "stats/global", // Phase 5

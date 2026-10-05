@@ -17,7 +17,7 @@ export { setAdminClaim } from "./admin/set_admin_claim";
  * Health check: proves the Functions pipeline works.
  * GET → { status: "ok", service: "prepnotes-functions", time: ISO string }
  */
-export const healthCheck = onRequest((req, res) => {
+export const healthCheck = onRequest({ invoker: "public" }, (req, res) => {
   logger.info("healthCheck called", { method: req.method });
   res.json({
     status: "ok",
