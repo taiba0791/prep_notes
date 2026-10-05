@@ -12,6 +12,10 @@ abstract final class StoragePaths {
   static String resourceFile(String resourceId, String fileName) =>
       'resources/$resourceId/$fileName';
 
+  /// Public read, admin write.
+  static String universityLogo(String universityId) =>
+      'universities/$universityId/logo';
+
   // Owner write, public read
   static String avatar(String uid) => 'avatars/$uid/avatar.jpg';
 }

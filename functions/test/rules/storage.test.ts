@@ -53,13 +53,56 @@ describe("avatars/{uid}/avatar.jpg", () => {
   });
 });
 
-describe("private notes stay locked", () => {
-  it("even the uploader/admin can't touch notes_private from the app", async () => {
+describe("notes_private: paid PDFs", () => {
+  const pdf = { contentType: "application/pdf" };
+  const path = "notes_private/n1/file.pdf";
+
+  it("admins can upload, replace and delete a PDF", async () => {
+    await assertSucceeds(ref(t.admin(), path).put(smallImage, pdf));
+    await assertSucceeds(ref(t.admin(), path).put(smallImage, pdf));
+    await assertSucceeds(ref(t.admin(), path).delete());
+  });
+
+  it("NOBODY can read a private PDF from the app — not even admins", async () => {
+    await t.env().withSecurityRulesDisabled(async (ctx) => {
+      await ctx.storage().ref(path).put(smallImage, pdf);
+    });
+    await assertFails(ref(t.guest(), path).getDownloadURL());
+    await assertFails(ref(t.student("alice"), path).getDownloadURL());
+    await assertFails(ref(t.admin(), path).getDownloadURL());
+  });
+
+  it("students can't upload; admins can't upload non-PDFs or other names", async () => {
+    await assertFails(ref(t.student("alice"), path).put(smallImage, pdf));
+    await assertFails(ref(t.admin(), path).put(smallImage, jpeg));
+    await assertFails(ref(t.admin(), "notes_private/n1/other.pdf").put(smallImage, pdf));
+  });
+});
+
+describe("notes_public: thumbnails and previews", () => {
+  it("anyone can view; only admins upload thumbnails", async () => {
+    const path = "notes_public/n1/thumbnail.jpg";
+    await assertSucceeds(ref(t.admin(), path).put(smallImage, jpeg));
+    await assertSucceeds(ref(t.guest(), path).getDownloadURL());
+    await assertFails(ref(t.student("alice"), path).put(smallImage, jpeg));
+    await assertFails(ref(t.admin(), path).put(tooBig, jpeg));
+  });
+
+  it("preview.pdf can't be uploaded from the app (Cloud Function makes it)", async () => {
     await assertFails(
-      ref(t.admin(), "notes_private/n1/file.pdf").put(smallImage, {
+      ref(t.admin(), "notes_public/n1/preview.pdf").put(smallImage, {
         contentType: "application/pdf",
       }),
     );
-    await assertFails(ref(t.student("alice"), "notes_private/n1/file.pdf").getDownloadURL());
+  });
+});
+
+describe("university logos", () => {
+  it("anyone can view; only admins upload small images", async () => {
+    const path = "universities/mu/logo";
+    await assertSucceeds(ref(t.admin(), path).put(smallImage, jpeg));
+    await assertSucceeds(ref(t.guest(), path).getDownloadURL());
+    await assertFails(ref(t.student("alice"), path).put(smallImage, jpeg));
+    await assertFails(ref(t.admin(), path).put(tooBig, jpeg));
   });
 });

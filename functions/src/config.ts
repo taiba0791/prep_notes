@@ -23,6 +23,7 @@ export const OWNER_EMAILS: readonly string[] = ["prep.notes247@gmail.com"];
 export const Collections = {
   users: "users",
   orders: "orders",
+  notes: "notes",
 } as const;
 
 export const OrderFields = {
@@ -37,6 +38,18 @@ export const STORAGE_BUCKET = "prepnotes-635d6.firebasestorage.app";
 /** Mirrors lib/core/constants/storage_paths.dart. */
 export const StoragePaths = {
   avatarFolder: (uid: string) => `avatars/${uid}/`,
+  notePdf: (noteId: string) => `notes_private/${noteId}/file.pdf`,
+  notePreview: (noteId: string) => `notes_public/${noteId}/preview.pdf`,
+  notePrivateFolder: (noteId: string) => `notes_private/${noteId}/`,
+  notePublicFolder: (noteId: string) => `notes_public/${noteId}/`,
+} as const;
+
+export const NoteFields = {
+  pageCount: "pageCount",
+  fileSizeBytes: "fileSizeBytes",
+  previewPages: "previewPages",
+  hasPreview: "hasPreview",
+  storagePath: "storagePath",
 } as const;
 
 export const UserFields = {
