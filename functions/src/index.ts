@@ -6,16 +6,11 @@
  *
  * Money is always an integer in paise (₹49 = 4900).
  */
-import { setGlobalOptions } from "firebase-functions/v2";
-import { onRequest } from "firebase-functions/v2/https";
+import "./config";
 import * as logger from "firebase-functions/logger";
-import { initializeApp } from "firebase-admin/app";
+import { onRequest } from "firebase-functions/v2/https";
 
-initializeApp();
-
-// Same region as Firestore (Mumbai). maxInstances caps cost if a function
-// is ever flooded with requests.
-setGlobalOptions({ region: "asia-south1", maxInstances: 10 });
+export { setAdminClaim } from "./admin/set_admin_claim";
 
 /**
  * Health check: proves the Functions pipeline works.

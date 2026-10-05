@@ -55,9 +55,25 @@ class FirebaseAuthRepository implements AuthRepository {
   Stream<AuthSession> sessionChanges() =>
       _auth.idTokenChanges().asyncMap(_toSession);
 
+  /// Uids whose token we've already force-refreshed during this app run.
+  final _refreshedThisRun = <String>{};
+
   Future<AuthSession> _toSession(User? user) async {
     if (user == null) return AuthSession.guest;
-    final token = await user.getIdTokenResult();
+    // Once per app start, fetch a fresh token from Google so recently
+    // granted / removed admin rights apply without logging out.
+    final forceRefresh = _refreshedThisRun.add(user.uid);
+    final IdTokenResult token;
+    try {
+      token = await user.getIdTokenResult(forceRefresh);
+    } on FirebaseAuthException {
+      // Offline at start-up: fall back to the cached token.
+      return _sessionFrom(user, await user.getIdTokenResult());
+    }
+    return _sessionFrom(user, token);
+  }
+
+  AuthSession _sessionFrom(User user, IdTokenResult token) {
     return AuthSession(
       uid: user.uid,
       email: user.email,

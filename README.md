@@ -118,6 +118,7 @@ cd functions
 npm run lint
 npm run build
 npm run rules:test     # starts emulators, runs security-rules tests, stops them
+npm run test:all       # rules + Cloud Functions tests on emulators
 cd ..
 ```
 
@@ -140,7 +141,31 @@ firebase deploy --only functions           # server code (needs Blaze plan)
 
 ---
 
-## 6. Project structure
+## 6. Admins
+
+Admin = the Firebase Auth custom claim `admin: true` (set only on the server).
+
+**First admin (one time).** Sign up in the app first, then:
+
+```bash
+# Emulators
+npm --prefix functions run bootstrap-admin -- you@example.com --emulator
+
+# Real project — needs a service-account key (Console → Project settings →
+# Service accounts → Generate new private key). Save it OUTSIDE the repo.
+$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\Users\<you>\.secrets\prepnotes-sa.json"
+npm --prefix functions run bootstrap-admin -- you@example.com
+```
+
+Add `--remove` to take admin away. The app picks up the change on its next
+start (it refreshes the token once per launch) or right after re-login.
+
+**More admins:** an existing admin calls the `setAdminClaim` Cloud Function
+(Admin → Users screen, Phase 5). Admins can't remove their own access.
+
+---
+
+## 7. Project structure
 
 ```
 lib/
@@ -166,7 +191,7 @@ firebase.json          Hosting, rules, functions, emulator config
 
 ---
 
-## 7. Security essentials
+## 8. Security essentials
 
 - Clients can **never** write `orders` or `users/{uid}/entitlements` — only Cloud Functions.
 - Private PDFs (`notes_private/…`) are served only via a short-lived signed URL
@@ -179,7 +204,7 @@ firebase.json          Hosting, rules, functions, emulator config
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Problem | Fix |
 |---|---|
