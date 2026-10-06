@@ -13,6 +13,7 @@ abstract final class RoutePaths {
   static const privacy = '/privacy';
   static const terms = '/terms';
   static const refundPolicy = '/refund-policy';
+  static const deliveryPolicy = '/delivery-policy';
 
   // Auth
   static const login = '/login';

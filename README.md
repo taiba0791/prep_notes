@@ -11,7 +11,8 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 3 done — Home, browsing, note details + free preview, search, recently viewed |
+| Status | Phase 3 done — Home, browsing, note details + free preview, search, recently viewed. Legal pages live (About, Contact, Privacy, Terms, Refund, Delivery) |
+| Legal text | `lib/features/legal/domain/legal_content.dart` — a template; set `LegalInfo.operatorName` to your KYC name |
 
 ---
 

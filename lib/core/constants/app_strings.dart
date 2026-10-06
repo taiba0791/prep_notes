@@ -33,6 +33,23 @@ abstract final class AppStrings {
   static const pagePrivacy = 'Privacy Policy';
   static const pageTerms = 'Terms of Service';
   static const pageRefundPolicy = 'Refund Policy';
+  static const pageDeliveryPolicy = 'Delivery Policy';
+
+  // Legal pages (long text lives in features/legal/domain/legal_content.dart)
+  static String lastUpdated(String date) => 'Last updated: $date';
+  static const contactTitleStart = 'Get in ';
+  static const contactTitleAccent = 'touch';
+  static const contactIntro =
+      'Questions about notes, payments, refunds or your account? '
+      'Write to us and we will help.';
+  static const contactEmailLabel = 'Email';
+  static const contactReplyLabel = 'Reply time';
+  static String contactReplyBody(String within) =>
+      'We usually reply within $within.';
+  static const contactRequestsLabel = 'Want notes for your subject?';
+  static const contactRequestsBody =
+      'Request them in Student Voice — we read every request.';
+  static const contactOperatorLabel = 'Operated by';
   static const pageLogin = 'Log in';
   static const pageRegister = 'Create account';
   static const pageForgotPassword = 'Forgot password';
