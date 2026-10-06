@@ -126,6 +126,117 @@ abstract final class AppStrings {
       'Universities will appear here soon. You can set it later.';
   static const profileSaved = 'Profile saved.';
 
+  // ── Home ───────────────────────────────────────────────
+  static const heroTitleStart = 'Exam-ready notes for ';
+  static const heroTitleAccent = 'your';
+  static const heroTitleEnd = ' university, semester by semester.';
+  static const heroSubtitle =
+      'Find notes written for your exact syllabus, preview before you pay, '
+      'and study with built-in timers, all in one place.';
+  static const searchPlaceholder = 'Search a subject, module or university';
+  static const searchButton = 'Search';
+  static const popularLabel = 'Popular:';
+  static const previewFreeBadge = 'Preview free';
+  static const statNotes = 'Notes';
+  static const statUniversities = 'Universities';
+  static const statSubjects = 'Subjects';
+  static const browseByStart = 'Browse by ';
+  static const browseByAccent = 'university';
+  static const seeAllUniversities = 'See all universities';
+  static const popularStart = 'Popular ';
+  static const popularAccent = 'this week';
+  static const browseAllNotes = 'Browse all notes';
+  static const whyStart = 'Why students pick ';
+  static const whyAccent = 'PrepNotes';
+  static const why1Title = 'Matched to your syllabus';
+  static const why1Body =
+      'Every note is filed under your university, semester, subject and module.';
+  static const why2Title = 'Preview before you buy';
+  static const why2Body =
+      'Read the first pages free. Pay only when the notes suit the way you study.';
+  static const why3Title = 'Yours on any device';
+  static const why3Body =
+      'Open purchased notes on web, Android or iOS with one login.';
+  static const studyTileTitle = 'Study Zone';
+  static const studyTileBody =
+      'Pomodoro and stopwatch timers that track your study hours and streaks.';
+  static const studyTileButton = 'Start studying';
+  static const resourceTileTitle = 'Resource Room';
+  static const resourceTileBody =
+      'Free previous-year papers, question banks and useful links.';
+  static const resourceTileButton = 'Open resources';
+  static const ctaTitle = 'Find the notes for your next exam.';
+  static const ctaSubtitle =
+      'Create a free account and preview any note today.';
+  static const footerTagline =
+      'University-wise notes, free resources and study tools for students.';
+  static const footerExplore = 'Explore';
+  static const footerCompany = 'Company';
+  static String copyright(int year) =>
+      '© $year PrepNotes. All rights reserved.';
+  static const noNotesYetTitle = 'Notes are on their way';
+  static const noNotesYetMessage =
+      'New notes are being added. Check back soon.';
+
+  // ── Browsing ───────────────────────────────────────────
+  static const allNotes = 'All notes';
+  static const semestersTitle = 'Semesters';
+  static const subjectsTitle = 'Subjects';
+  static String moduleHeading(int n, String title) => 'Module $n · $title';
+  static const filterAll = 'All';
+  static const filterFree = 'Free';
+  static const filterPaid = 'Paid';
+  static const sortLabel = 'Sort';
+  static const sortNewest = 'Newest';
+  static const sortPopular = 'Popular';
+  static const sortPriceLow = 'Price: low to high';
+  static const sortPriceHigh = 'Price: high to low';
+  static const maxPriceLabel = 'Max price';
+  static const anyPrice = 'Any price';
+  static String upTo(String price) => 'Up to $price';
+  static const priceSortNote = 'Sorted by price while a price filter is on.';
+  static const noMatchTitle = 'No notes match';
+  static const noMatchMessage =
+      'Try removing a filter or choosing another subject.';
+  static const noNotesInModule = 'No notes for this module yet.';
+
+  // ── Note details ───────────────────────────────────────
+  static const freePreview = 'Free preview';
+  static const buyToUnlock = 'Buy to unlock';
+  static const buyNow = 'Buy now';
+  static const getFree = 'Get it free';
+  static const readPreview = 'Read free preview';
+  static const viewNotes = 'View notes';
+  static const youOwnThis = 'You own these notes';
+  static const checkoutComingSoon = 'Checkout arrives soon (Phase 4).';
+  static const viewerComingSoon = 'The notes viewer arrives soon (Phase 4).';
+  static const noPreview = 'No free preview for these notes.';
+  static String moreFrom(String what) => what;
+  static const moreFromStart = 'More from ';
+  static String semesterShort(int n) => 'Semester $n';
+  static String boughtBy(int n) => '$n students bought this';
+  static const benefitSyllabus = 'Written for your university syllabus';
+  static const benefitDevices = 'Open on web, Android and iOS';
+  static const benefitPreview = 'Preview the first pages free';
+  static const benefitCheckout = 'Secure checkout with UPI, cards, netbanking';
+  static String fileSize(double mb) => '${mb.toStringAsFixed(1)} MB';
+  static const pdfLabel = 'PDF';
+  static const noteNotFoundTitle = 'Note not found';
+  static const noteNotFoundMessage =
+      'It may have been removed or is not published yet.';
+  static const openPreview = 'Open preview';
+  static const previewTitle = 'Free preview';
+
+  // ── Search ─────────────────────────────────────────────
+  static const searchTitle = 'Search';
+  static const searchStartTitle = 'Search notes';
+  static const searchStartMessage =
+      'Try a subject (“data structures”), a module or a university.';
+  static String searchNoResults(String q) => 'No notes found for “$q”';
+  static const searchNoResultsHint =
+      'Check the spelling, use fewer words, or browse by university.';
+  static String resultsFor(String q) => 'Results for “$q”';
+
   // ── Admin ──────────────────────────────────────────────
   static const adminTitle = 'Admin';
   static const adminBackToSite = 'Back to site';
@@ -191,6 +302,7 @@ abstract final class AppStrings {
   static const fieldTags = 'Tags (comma separated)';
   static const fieldPreviewPages = 'Free preview pages';
   static const fieldPublished = 'Published (visible to students)';
+  static const fieldFeatured = 'Featured on Home (“Popular this week”)';
   static const publishNeedsPdf = 'Upload the PDF before publishing.';
   static const fieldThumbnail = 'Thumbnail';
   static const fieldPdf = 'Notes PDF';

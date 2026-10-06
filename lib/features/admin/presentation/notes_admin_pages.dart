@@ -249,6 +249,7 @@ class _NoteFormState extends ConsumerState<_NoteForm> {
   late final _tags = TextEditingController(text: _note?.tags.join(', '));
   late bool _isFree = _note?.isFree ?? false;
   late bool _publish = _note?.isPublished ?? false;
+  late bool _featured = _note?.isFeatured ?? false;
   late int _previewPages = _note?.previewPages ?? 3;
   PickedFile? _pdf;
   PickedFile? _thumb;
@@ -454,6 +455,12 @@ class _NoteFormState extends ConsumerState<_NoteForm> {
           subtitle: _hasPdf ? null : const Text(AppStrings.publishNeedsPdf),
           value: _publish && _hasPdf,
           onChanged: _hasPdf ? (v) => setState(() => _publish = v) : null,
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text(AppStrings.fieldFeatured),
+          value: _featured,
+          onChanged: (v) => setState(() => _featured = v),
         ),
         const SizedBox(height: 16),
         SubmitButton(

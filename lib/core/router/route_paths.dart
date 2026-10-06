@@ -4,6 +4,10 @@ abstract final class RoutePaths {
   // Public pages
   static const home = '/';
   static const search = '/search';
+  static const queryParam = 'q';
+  static String searchFor(String text) => text.isEmpty
+      ? search
+      : Uri(path: search, queryParameters: {queryParam: text}).toString();
   static const about = '/about';
   static const contact = '/contact';
   static const privacy = '/privacy';
@@ -32,6 +36,9 @@ abstract final class RoutePaths {
   static String subject(String subjectId) => '/notes/sub/$subjectId';
   static String note(String noteId) => '/notes/$noteId';
   static String noteViewer(String noteId) => '/notes/$noteId/view';
+
+  /// Free preview (first pages) — public.
+  static String notePreview(String noteId) => '/notes/$noteId/preview';
 
   // Purchases & checkout
   static const purchases = '/purchases';

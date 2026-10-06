@@ -42,6 +42,9 @@ abstract class Note with _$Note {
     @Default(3) int previewPages,
     @Default(false) bool hasPreview,
     @Default(false) bool isPublished,
+
+    /// Admin flag: listed first in "Popular this week".
+    @Default(false) bool isFeatured,
     @Default(0) int purchaseCount,
     @Default(<String>[]) List<String> tags,
     @Default(<String>[]) List<String> searchKeywords,

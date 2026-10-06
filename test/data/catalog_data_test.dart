@@ -90,6 +90,7 @@ void main() {
       NoteFields.previewPages,
       NoteFields.hasPreview,
       NoteFields.isPublished,
+      NoteFields.isFeatured,
       NoteFields.purchaseCount,
       NoteFields.tags,
       NoteFields.searchKeywords,

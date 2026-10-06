@@ -189,3 +189,42 @@ describe("users/{uid}/entitlements", () => {
     await assertFails(db(t.student("alice")).doc(ent).delete());
   });
 });
+
+describe("users/{uid}/recentlyViewed", () => {
+  const path = "users/alice/recentlyViewed/n1";
+  const item = (overrides: Record<string, unknown> = {}) => ({
+    noteId: "n1",
+    title: "Data Structures",
+    universityName: "MU",
+    semesterNumber: 3,
+    subjectName: "DS",
+    price: 14900,
+    isFree: false,
+    pageCount: 120,
+    viewedAt: serverTimestamp(),
+    ...overrides,
+  });
+
+  it("owner can record, read and delete", async () => {
+    await assertSucceeds(db(t.student("alice")).doc(path).set(item()));
+    await assertSucceeds(db(t.student("alice")).doc(path).get());
+    await assertSucceeds(
+      db(t.student("alice")).collection("users/alice/recentlyViewed").orderBy("viewedAt", "desc").limit(20).get(),
+    );
+    await assertSucceeds(db(t.student("alice")).doc(path).delete());
+  });
+
+  it("others can't read or write it (not even admins write)", async () => {
+    await assertFails(db(t.student("bob")).doc(path).set(item()));
+    await assertFails(db(t.student("bob")).doc(path).get());
+    await assertFails(db(t.guest()).doc(path).get());
+    await assertFails(db(t.admin()).doc(path).set(item()));
+  });
+
+  it("rejects mismatched ids, phone clocks and extra fields", async () => {
+    await assertFails(db(t.student("alice")).doc(path).set(item({ noteId: "other" })));
+    await assertFails(db(t.student("alice")).doc(path).set(item({ viewedAt: new Date() })));
+    await assertFails(db(t.student("alice")).doc(path).set(item({ purchased: true })));
+  });
+});
+

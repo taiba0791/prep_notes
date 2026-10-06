@@ -85,6 +85,21 @@ service cloud.firestore {
         allow read: if isOwner(uid) || isAdmin();
         allow write: if false;
       }
+
+      // "Recently viewed": the owner keeps a small copy of notes they opened
+      // (the app trims it to the newest 20).
+      match /recentlyViewed/{noteId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+               'noteId', 'title', 'universityName', 'semesterNumber', 'subjectName',
+               'price', 'isFree', 'thumbnailUrl', 'pageCount', 'viewedAt'])
+          && request.resource.data.noteId == noteId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 200
+          && request.resource.data.price is int
+          && request.resource.data.viewedAt == request.time;
+      }
     }
 
     // ───────────────────────── catalog ─────────────────────────
@@ -180,7 +195,7 @@ service cloud.firestore {
             'title', 'description', 'universityId', 'semesterId', 'subjectId', 'moduleId',
             'universityName', 'semesterNumber', 'subjectName', 'moduleTitle',
             'price', 'isFree', 'thumbnailUrl', 'pageCount', 'fileSizeBytes',
-            'storagePath', 'previewPages', 'hasPreview', 'isPublished', 'purchaseCount',
+            'storagePath', 'previewPages', 'hasPreview', 'isPublished', 'isFeatured', 'purchaseCount',
             'tags', 'searchKeywords', 'createdAt', 'updatedAt'])
           && isText(d.title, 3, 200)
           && optionalText(d, 'description', 5000)
@@ -192,6 +207,7 @@ service cloud.firestore {
           && (d.isFree || d.price > 0)
           && d.previewPages is int && d.previewPages >= 0 && d.previewPages <= 30
           && d.isPublished is bool
+          && (!('isFeatured' in d) || d.isFeatured is bool)
           // Can't publish without a PDF.
           && (!d.isPublished || ('storagePath' in d && d.storagePath == 'notes_private/' + noteId + '/file.pdf'))
           && optionalText(d, 'thumbnailUrl', 1024)

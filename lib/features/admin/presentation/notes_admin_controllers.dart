@@ -131,6 +131,7 @@ class NoteDraft {
     required this.tags,
     required this.previewPages,
     required this.publish,
+    this.featured = false,
   });
 
   final String title;
@@ -141,6 +142,7 @@ class NoteDraft {
   final List<String> tags;
   final int previewPages;
   final bool publish;
+  final bool featured;
 }
 
 /// Saves a note: creates a draft (new notes), uploads thumbnail + PDF, then
