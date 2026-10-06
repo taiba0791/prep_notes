@@ -470,6 +470,10 @@ class SiteFooter extends StatelessWidget {
                   link(AppStrings.pagePrivacy, RoutePaths.privacy),
                   link(AppStrings.pageTerms, RoutePaths.terms),
                   link(AppStrings.pageRefundPolicy, RoutePaths.refundPolicy),
+                  link(
+                    AppStrings.pageDeliveryPolicy,
+                    RoutePaths.deliveryPolicy,
+                  ),
                 ]),
               ],
             ),

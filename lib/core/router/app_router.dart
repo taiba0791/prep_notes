@@ -13,6 +13,8 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/legal/domain/legal_content.dart';
+import '../../features/legal/presentation/legal_screens.dart';
 import '../../features/notes/presentation/browse_screens.dart';
 import '../../features/notes/presentation/note_details_screen.dart';
 import '../../features/notes/presentation/preview_and_search_screens.dart';
@@ -85,11 +87,15 @@ GoRouter appRouter(Ref ref) {
                       state.uri.queryParameters[RoutePaths.queryParam] ?? '',
                 ),
               ),
-              _page(RoutePaths.about, AppStrings.pageAbout),
-              _page(RoutePaths.contact, AppStrings.pageContact),
-              _page(RoutePaths.privacy, AppStrings.pagePrivacy),
-              _page(RoutePaths.terms, AppStrings.pageTerms),
-              _page(RoutePaths.refundPolicy, AppStrings.pageRefundPolicy),
+              _legal(RoutePaths.about, LegalContent.about),
+              GoRoute(
+                path: RoutePaths.contact,
+                builder: (context, state) => const ContactScreen(),
+              ),
+              _legal(RoutePaths.privacy, LegalContent.privacy),
+              _legal(RoutePaths.terms, LegalContent.terms),
+              _legal(RoutePaths.refundPolicy, LegalContent.refund),
+              _legal(RoutePaths.deliveryPolicy, LegalContent.delivery),
             ],
           ),
           // 1 · Notes: University → Semester → Subject → Note
@@ -263,6 +269,12 @@ String? _from(GoRouterState state) =>
 
 /// A route that shows a [PlaceholderScreen] with its URL parameters.
 /// Each phase swaps these for real screens.
+/// A legal / info page (About, Privacy, Terms, Refund, Delivery).
+GoRoute _legal(String path, LegalDocument document) => GoRoute(
+  path: path,
+  builder: (context, state) => LegalScreen(document: document),
+);
+
 GoRoute _page(
   String path,
   String title, {
