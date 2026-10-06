@@ -100,10 +100,19 @@ abstract final class EntitlementFields {
   static const pricePaid = 'pricePaid'; // paise
 }
 
-/// users/{uid}/recentlyViewed/{noteId}
+/// users/{uid}/recentlyViewed/{noteId} — owner only, capped at 20.
+/// Holds a small copy of the note so the list needs no extra reads.
 abstract final class RecentlyViewedFields {
   static const noteId = 'noteId';
   static const viewedAt = 'viewedAt';
+  static const title = 'title';
+  static const universityName = 'universityName';
+  static const semesterNumber = 'semesterNumber';
+  static const subjectName = 'subjectName';
+  static const price = 'price'; // paise
+  static const isFree = 'isFree';
+  static const thumbnailUrl = 'thumbnailUrl';
+  static const pageCount = 'pageCount';
 }
 
 /// users/{uid}/studySessions/{sessionId}
@@ -178,6 +187,9 @@ abstract final class NoteFields {
   /// Set by Cloud Functions once preview.pdf exists.
   static const hasPreview = 'hasPreview';
   static const isPublished = 'isPublished';
+
+  /// Admin flag: show first in "Popular this week" on Home.
+  static const isFeatured = 'isFeatured';
   static const purchaseCount = 'purchaseCount';
   static const tags = CommonFields.tags;
   static const searchKeywords = CommonFields.searchKeywords;

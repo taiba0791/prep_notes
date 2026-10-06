@@ -118,6 +118,21 @@ describe("notes", () => {
     });
   }
 
+  it("isFeatured must be true/false", async () => {
+    await assertSucceeds(db(t.admin()).doc("notes/n1").set(newNote({ isFeatured: true })));
+    await assertFails(db(t.admin()).doc("notes/n2").set(newNote({ isFeatured: "yes" })));
+  });
+
+  it("student browse queries (published only) are allowed", async () => {
+    const notes = db(t.guest()).collection("notes").where("isPublished", "==", true);
+    await assertSucceeds(notes.where("subjectId", "==", "ds").orderBy("updatedAt", "desc").limit(12).get());
+    await assertSucceeds(notes.where("price", "==", 0).orderBy("updatedAt", "desc").limit(12).get());
+    await assertSucceeds(notes.where("price", ">=", 1).orderBy("price").limit(12).get());
+    await assertSucceeds(notes.where("searchKeywords", "array-contains", "data").limit(30).get());
+    // Without the published filter: denied.
+    await assertFails(db(t.guest()).collection("notes").where("subjectId", "==", "ds").get());
+  });
+
   it("free notes can have price 0", async () => {
     await assertSucceeds(db(t.admin()).doc("notes/n1").set(newNote({ isFree: true, price: 0 })));
   });
