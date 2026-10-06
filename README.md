@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 3 done — Home, browsing, note details + free preview, search, recently viewed. Legal pages live (About, Contact, Privacy, Terms, Refund, Delivery) |
+| Status | Phase 4 done — Razorpay checkout (website), My Purchases, secure PDF viewer. Legal pages live. |
 | Legal text | `lib/features/legal/domain/legal_content.dart` — a template; set `LegalInfo.operatorName` to your KYC name |
 
 ---
@@ -181,6 +181,67 @@ start (it refreshes the token once per launch) or right after re-login.
 
 ---
 
+## 6b. Payments (Razorpay)
+
+**Who can buy where:** the **website** has Razorpay Checkout. The **Android/iOS
+app** shows *Buy on website* (Play Store / App Store rules for digital goods)
+and opens everything the student bought. To allow in-app buying later, add
+`razorpay_flutter` and change `buyInApp` in
+`lib/features/purchases/data/payment_service.dart`.
+
+**Flow:** `createOrder` (server reads the price) → Razorpay Checkout →
+`verifyPayment` (server checks the signature) → entitlement written by the
+server. `razorpayWebhook` does the same if the tab was closed. Both are
+idempotent. PDFs open only through `getNoteFileUrl` (10-minute signed link).
+
+### Keys (test mode first)
+
+Razorpay Dashboard → switch to **Test Mode** → Account & Settings → **API Keys**
+→ Generate. Never commit or paste the Key Secret anywhere except these prompts:
+
+```bash
+firebase functions:secrets:set RAZORPAY_KEY_ID          # rzp_test_…
+firebase functions:secrets:set RAZORPAY_KEY_SECRET
+firebase functions:secrets:set RAZORPAY_WEBHOOK_SECRET  # any long random text you choose
+```
+
+For the emulators, create `functions/.secret.local` (git-ignored):
+
+```
+RAZORPAY_KEY_ID=rzp_test_xxx
+RAZORPAY_KEY_SECRET=xxx
+RAZORPAY_WEBHOOK_SECRET=xxx
+```
+
+### Signed PDF links (one-time, production)
+
+The functions' service account must be allowed to sign URLs:
+Google Cloud Console → IAM → find `PROJECT_NUMBER-compute@developer.gserviceaccount.com`
+→ Edit → **Add role: Service Account Token Creator** → Save. (Also enable the
+*IAM Service Account Credentials API* if asked.) Without it, "Read now" fails
+with an internal error.
+
+### Webhook
+
+After `firebase deploy --only functions`, copy the `razorpayWebhook` URL from
+the output. Razorpay Dashboard (Test Mode) → Account & Settings → **Webhooks**
+→ Add: that URL, the same secret as `RAZORPAY_WEBHOOK_SECRET`, events
+**payment.captured**, **payment.failed**, **order.paid**.
+
+### Test payments
+
+Use Razorpay's test details (Razorpay docs → *Test card / UPI details*), e.g.
+UPI ID `success@razorpay` (succeeds) or `failure@razorpay` (fails). Test-mode
+money is not real.
+
+### Going live (after the website is approved)
+
+Switch the dashboard to Live Mode, generate live keys, run the three
+`secrets:set` commands again with the live values, add the webhook again in
+Live Mode, and `firebase deploy --only functions`.
+
+---
+
 ## 7. Project structure
 
 ```
@@ -229,4 +290,6 @@ firebase.json          Hosting, rules, functions, emulator config
 | Emulators: *port taken* | Another emulator is running — stop it (Ctrl + C) or close the process using the port. |
 | Emulators: *Java not found* | Install Java 21+ and restart the terminal. |
 | `flutter devices` doesn't show the phone | Use a data cable, set USB mode to *File transfer*, re-accept the debugging prompt. |
+| "Read now" says something went wrong (production) | Give the functions service account the *Service Account Token Creator* role (§6b). |
+| Checkout says the payment service is busy | Secrets missing or wrong (`firebase functions:secrets:access RAZORPAY_KEY_ID`), or an ad-blocker blocked `checkout.razorpay.com`. |
 | Functions emulator warns Node 22 vs 24 | Harmless locally; Google runs Node 22 when deployed. |

@@ -17,6 +17,10 @@ export {
   onNoteUpdated,
 } from "./notes/note_files";
 export { onUserProfileWritten } from "./admin/owner_admin";
+export { createOrder } from "./payments/create_order";
+export { getNoteFileUrl } from "./payments/note_file_url";
+export { razorpayWebhook } from "./payments/webhook";
+export { verifyPayment } from "./payments/verify_payment";
 export { setAdminClaim } from "./admin/set_admin_claim";
 
 /**

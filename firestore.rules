@@ -102,6 +102,19 @@ service cloud.firestore {
       }
     }
 
+    // ───────────────────────── orders ─────────────────────────
+    // Created and updated ONLY by Cloud Functions (createOrder, verifyPayment,
+    // razorpayWebhook). Students read their own; list queries must filter
+    // on userId == their uid.
+
+    match /orders/{orderId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+
+    // stats, fileAccessLogs, rateLimits: server-only (no match = denied).
+
     // ───────────────────────── catalog ─────────────────────────
     // University → Semester → Subject → Module: anyone can read (it's the
     // public catalog); only admins write, with field checks.
