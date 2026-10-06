@@ -46,6 +46,9 @@ abstract interface class BrowseRepository {
 
   /// Counted on the server (cheap aggregate queries, no documents read).
   Future<CatalogCounts> counts();
+
+  /// Published notes in a semester (for the semester bundle card).
+  Future<int> semesterNoteCount(String semesterId);
 }
 
 class FirestoreBrowseRepository implements BrowseRepository {
@@ -234,6 +237,15 @@ class FirestoreBrowseRepository implements BrowseRepository {
       subjects: results[2].count ?? 0,
     );
   }
+
+  @override
+  Future<int> semesterNoteCount(String semesterId) async =>
+      (await _published
+              .where(NoteFields.semesterId, isEqualTo: semesterId)
+              .count()
+              .get())
+          .count ??
+      0;
 }
 
 @Riverpod(keepAlive: true)

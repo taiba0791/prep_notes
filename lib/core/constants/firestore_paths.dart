@@ -23,11 +23,15 @@ abstract final class FirestoreCollections {
   static const feedback = 'feedback';
   static const stats = 'stats';
   static const statsDaily = 'stats_daily';
+  static const subscriptions = 'subscriptions';
+  static const config = 'config';
 
   // Sub-collections of users/{uid}
   static const entitlements = 'entitlements';
   static const recentlyViewed = 'recentlyViewed';
   static const studySessions = 'studySessions';
+  static const bundles = 'bundles';
+  static const roomItems = 'roomItems';
 }
 
 /// Full document / collection paths.
@@ -39,6 +43,18 @@ abstract final class FirestorePaths {
       '${user(uid)}/${FirestoreCollections.entitlements}';
   static String entitlement(String uid, String noteId) =>
       '${entitlements(uid)}/$noteId';
+
+  /// Semester bundles — WRITTEN ONLY BY CLOUD FUNCTIONS.
+  static String bundles(String uid) =>
+      '${user(uid)}/${FirestoreCollections.bundles}';
+  static String bundle(String uid, String semesterId) =>
+      '${bundles(uid)}/$semesterId';
+
+  /// The student's private Resource Room items.
+  static String roomItems(String uid) =>
+      '${user(uid)}/${FirestoreCollections.roomItems}';
+  static String roomItem(String uid, String itemId) =>
+      '${roomItems(uid)}/$itemId';
 
   static String recentlyViewed(String uid) =>
       '${user(uid)}/${FirestoreCollections.recentlyViewed}';
@@ -59,6 +75,13 @@ abstract final class FirestorePaths {
       '${FirestoreCollections.resourceCategories}/$id';
   static String resource(String id) => '${FirestoreCollections.resources}/$id';
   static String feedback(String id) => '${FirestoreCollections.feedback}/$id';
+
+  /// Room subscriptions — WRITTEN ONLY BY CLOUD FUNCTIONS.
+  static String subscription(String id) =>
+      '${FirestoreCollections.subscriptions}/$id';
+
+  /// Resource Room plan prices (public read, written by Cloud Functions).
+  static const roomPlans = '${FirestoreCollections.config}/roomPlans';
 
   /// Aggregate counters, maintained by Cloud Functions.
   static const statsGlobal = '${FirestoreCollections.stats}/global';
@@ -99,6 +122,8 @@ abstract final class UserFields {
   // Written ONLY by Cloud Functions (never part of the app's profile writes).
   static const nameLower = 'nameLower'; // admin search
   static const disabled = 'disabled'; // mirror of the Auth "disabled" flag
+  static const roomAccessUntil = 'roomAccessUntil'; // Room open until
+  static const roomBytes = 'roomBytes'; // Room uploads, bytes used
 }
 
 /// users/{uid}/entitlements/{noteId} — written ONLY by Cloud Functions.
@@ -107,6 +132,7 @@ abstract final class EntitlementFields {
   static const orderId = 'orderId';
   static const purchasedAt = 'purchasedAt';
   static const pricePaid = 'pricePaid'; // paise
+  static const expiresAt = 'expiresAt'; // access ends (6 months)
   // A small copy of the note, so "My Purchases" needs no extra reads.
   static const title = 'title';
   static const universityName = 'universityName';
@@ -155,6 +181,9 @@ abstract final class SemesterFields {
   static const number = 'number';
   static const name = 'name';
   static const isActive = CommonFields.isActive;
+
+  /// Semester bundle price in paise (missing = AccessRules.defaultBundlePrice).
+  static const bundlePrice = 'bundlePrice';
 }
 
 /// subjects/{subjectId}
@@ -229,6 +258,47 @@ abstract final class OrderFields {
   static const refundedAt = 'refundedAt';
   static const refundedBy = 'refundedBy';
   static const refundReason = 'refundReason';
+  static const type = 'type'; // see OrderType
+  static const semesterId = 'semesterId'; // bundle orders
+  static const planKey = 'planKey'; // Room subscription charges
+  static const subscriptionId = 'subscriptionId';
+}
+
+/// users/{uid}/bundles/{semesterId} — written ONLY by Cloud Functions.
+abstract final class BundleFields {
+  static const semesterId = 'semesterId';
+  static const universityId = 'universityId';
+  static const universityName = 'universityName';
+  static const semesterNumber = 'semesterNumber';
+  static const semesterName = 'semesterName';
+  static const orderId = 'orderId';
+  static const pricePaid = 'pricePaid'; // paise
+  static const purchasedAt = 'purchasedAt';
+  static const expiresAt = 'expiresAt';
+}
+
+/// subscriptions/{razorpaySubscriptionId} — written ONLY by Cloud Functions.
+abstract final class SubscriptionFields {
+  static const userId = 'userId';
+  static const planKey = 'planKey';
+  static const amount = 'amount'; // paise per period
+  static const status = 'status';
+  static const currentEnd = 'currentEnd';
+  static const cancelAtPeriodEnd = 'cancelAtPeriodEnd';
+  static const createdAt = CommonFields.createdAt;
+}
+
+/// users/{uid}/roomItems/{itemId} — the student's own Resource Room.
+abstract final class RoomItemFields {
+  static const type = 'type'; // see RoomItemType
+  static const title = 'title';
+  static const url = 'url';
+  static const storagePath = 'storagePath';
+  static const fileName = 'fileName';
+  static const contentType = 'contentType';
+  static const sizeBytes = 'sizeBytes';
+  static const createdAt = CommonFields.createdAt;
+  static const searchKeywords = CommonFields.searchKeywords;
 }
 
 /// resourceCategories/{categoryId}
@@ -289,6 +359,32 @@ abstract final class DailyStatsFields {
 abstract final class UserRole {
   static const student = 'student';
   static const admin = 'admin';
+}
+
+abstract final class OrderType {
+  static const note = 'note';
+  static const bundle = 'bundle';
+  static const subscription = 'subscription';
+}
+
+abstract final class RoomItemType {
+  static const drive = 'drive';
+  static const youtube = 'youtube';
+  static const file = 'file';
+}
+
+/// Access rules (must match functions/src/config.ts).
+abstract final class AccessRules {
+  /// Notes and semester bundles stay unlocked this long.
+  static const months = 6;
+
+  /// Semester bundle price when the admin hasn't set one (₹899).
+  static const defaultBundlePrice = 89900;
+  static const roomMaxFileBytes = 25 * 1024 * 1024;
+  static const roomQuotaBytes = 200 * 1024 * 1024;
+
+  /// Warn this many days before Room access (and its items) ends.
+  static const roomWarningDays = 14;
 }
 
 abstract final class OrderStatus {

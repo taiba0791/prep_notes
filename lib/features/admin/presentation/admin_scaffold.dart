@@ -58,9 +58,9 @@ const adminSections = [
     RoutePaths.adminOrders,
   ),
   AdminSection(
-    AppStrings.adminResources,
-    Icons.folder_outlined,
-    RoutePaths.adminResources,
+    AppStrings.adminRoomPlans,
+    Icons.workspace_premium_outlined,
+    RoutePaths.adminRoomPlans,
   ),
   AdminSection(
     AppStrings.adminStudentVoice,

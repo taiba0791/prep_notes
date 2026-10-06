@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/error_reporter.dart';
+import '../../../data/models/access.dart';
 import '../../../data/models/purchase.dart';
 import '../../../data/repositories/purchases_repository.dart';
 import '../../auth/data/auth_repository.dart';
@@ -15,6 +16,29 @@ import '../domain/purchase_failure.dart';
 part 'purchases_controllers.g.dart';
 
 // ── Checkout ───────────────────────────────────────────────
+
+/// What is being bought. Used as the checkout provider key ("note:ID",
+/// "bundle:SEMESTER", "room:m1") so it works as a URL-friendly string.
+enum CheckoutKind { note, bundle, room }
+
+class CheckoutTarget {
+  const CheckoutTarget(this.kind, this.id);
+
+  factory CheckoutTarget.parse(String key) {
+    final i = key.indexOf(':');
+    return CheckoutTarget(
+      CheckoutKind.values.byName(key.substring(0, i)),
+      key.substring(i + 1),
+    );
+  }
+
+  final CheckoutKind kind;
+
+  /// noteId, semesterId or Room plan key (m1 | m3 | m6).
+  final String id;
+
+  String get key => '${kind.name}:$id';
+}
 
 enum CheckoutStep { ready, creating, paying, verifying, success, failed }
 
@@ -32,15 +56,18 @@ class CheckoutState {
       step == CheckoutStep.verifying;
 }
 
-/// create order (server) → Razorpay window → verify (server).
+/// create (server sets the price) → Razorpay window → verify (server).
 @riverpod
 class CheckoutController extends _$CheckoutController {
   @override
-  CheckoutState build(String noteId) => const CheckoutState(CheckoutStep.ready);
+  CheckoutState build(String targetKey) =>
+      const CheckoutState(CheckoutStep.ready);
+
+  CheckoutTarget get target => CheckoutTarget.parse(targetKey);
 
   /// Safe to tap twice: ignored while a payment is in progress.
   Future<void> pay({
-    required String noteTitle,
+    required String description,
     required String themeColor,
   }) async {
     if (state.isBusy || state.step == CheckoutStep.success) return;
@@ -57,16 +84,31 @@ class CheckoutController extends _$CheckoutController {
 
     try {
       state = const CheckoutState(CheckoutStep.creating);
-      final order = await repo.createOrder(noteId);
-      if (!ref.mounted) return;
-
-      state = const CheckoutState(CheckoutStep.paying);
-      final outcome = await payments.pay(
-        order,
-        name: AppStrings.appName,
-        description: noteTitle,
-        themeColor: themeColor,
-      );
+      final PaymentOutcome outcome;
+      final t = target;
+      if (t.kind == CheckoutKind.room) {
+        final sub = await repo.createRoomSubscription(t.id);
+        if (!ref.mounted) return;
+        state = const CheckoutState(CheckoutStep.paying);
+        outcome = await payments.subscribe(
+          sub,
+          name: AppStrings.appName,
+          description: description,
+          themeColor: themeColor,
+        );
+      } else {
+        final order = t.kind == CheckoutKind.bundle
+            ? await repo.createBundleOrder(t.id)
+            : await repo.createOrder(t.id);
+        if (!ref.mounted) return;
+        state = const CheckoutState(CheckoutStep.paying);
+        outcome = await payments.pay(
+          order,
+          name: AppStrings.appName,
+          description: description,
+          themeColor: themeColor,
+        );
+      }
       if (!ref.mounted) return;
 
       switch (outcome) {
@@ -84,11 +126,19 @@ class CheckoutController extends _$CheckoutController {
           );
         case PaymentSucceeded():
           state = const CheckoutState(CheckoutStep.verifying);
-          await repo.verifyPayment(
-            orderId: outcome.orderId,
-            paymentId: outcome.paymentId,
-            signature: outcome.signature,
-          );
+          if (t.kind == CheckoutKind.room) {
+            await repo.verifyRoomSubscription(
+              subscriptionId: outcome.subscriptionId,
+              paymentId: outcome.paymentId,
+              signature: outcome.signature,
+            );
+          } else {
+            await repo.verifyPayment(
+              orderId: outcome.orderId,
+              paymentId: outcome.paymentId,
+              signature: outcome.signature,
+            );
+          }
           _succeeded();
       }
     } on PurchaseException catch (e) {
@@ -112,10 +162,7 @@ class CheckoutController extends _$CheckoutController {
   void _succeeded() {
     if (!ref.mounted) return;
     state = const CheckoutState(CheckoutStep.success);
-    ref
-      ..invalidate(ownsNoteProvider(noteId))
-      ..invalidate(myPurchasesProvider)
-      ..invalidate(myOrdersProvider);
+    refreshAccess(ref.invalidate);
   }
 
   /// "Try again" after a failure.
@@ -123,6 +170,57 @@ class CheckoutController extends _$CheckoutController {
     if (!state.isBusy) state = const CheckoutState(CheckoutStep.ready);
   }
 }
+
+/// Re-reads everything that depends on what the student has paid for.
+/// Pass `ref.invalidate` (works with Ref and WidgetRef).
+void refreshAccess(void Function(ProviderOrFamily provider) invalidate) {
+  for (final p in <ProviderOrFamily>[
+    noteAccessProvider,
+    myPurchasesProvider,
+    myOrdersProvider,
+    myBundlesProvider,
+    semesterBundleProvider,
+    roomAccessProvider,
+    roomSubscriptionProvider,
+  ]) {
+    invalidate(p);
+  }
+}
+
+// ── Bundles, Room access, subscription ─────────────────────
+
+@riverpod
+Future<List<SemesterBundle>> myBundles(Ref ref) async {
+  final uid = ref.watch(authSessionProvider.select((s) => s.value?.uid));
+  if (uid == null) return const [];
+  return ref.watch(purchasesRepositoryProvider).bundles(uid);
+}
+
+/// The student's bundle for [semesterId] (active or expired), if any.
+@riverpod
+Future<SemesterBundle?> semesterBundle(Ref ref, String semesterId) async {
+  final uid = ref.watch(authSessionProvider.select((s) => s.value?.uid));
+  if (uid == null) return null;
+  return ref.watch(purchasesRepositoryProvider).bundle(uid, semesterId);
+}
+
+@riverpod
+Future<RoomAccess> roomAccess(Ref ref) async {
+  final uid = ref.watch(authSessionProvider.select((s) => s.value?.uid));
+  if (uid == null) return RoomAccess.closed;
+  return ref.watch(purchasesRepositoryProvider).roomAccess(uid);
+}
+
+@riverpod
+Future<RoomSubscription?> roomSubscription(Ref ref) async {
+  final uid = ref.watch(authSessionProvider.select((s) => s.value?.uid));
+  if (uid == null) return null;
+  return ref.watch(purchasesRepositoryProvider).roomSubscription(uid);
+}
+
+@riverpod
+Future<List<RoomPlan>> roomPlans(Ref ref) =>
+    ref.watch(purchasesRepositoryProvider).roomPlans();
 
 // ── My Purchases (paginated) ───────────────────────────────
 

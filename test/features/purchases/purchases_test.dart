@@ -123,14 +123,15 @@ void main() {
         ],
       );
       addTearDown(c.dispose);
-      c.listen(checkoutControllerProvider('n1'), (_, _) {});
+      c.listen(checkoutControllerProvider('note:n1'), (_, _) {});
       return c;
     }
 
-    CheckoutState state() => container.read(checkoutControllerProvider('n1'));
+    CheckoutState state() =>
+        container.read(checkoutControllerProvider('note:n1'));
     Future<void> pay() => container
-        .read(checkoutControllerProvider('n1').notifier)
-        .pay(noteTitle: 'Maths', themeColor: '#8f1d3f');
+        .read(checkoutControllerProvider('note:n1').notifier)
+        .pay(description: 'Maths', themeColor: '#8f1d3f');
 
     test('success: create → pay → verify on the server', () async {
       container = make();
@@ -149,7 +150,7 @@ void main() {
       expect(repo.calls, ['createOrder:n1']);
 
       // "Try again" works.
-      container.read(checkoutControllerProvider('n1').notifier).reset();
+      container.read(checkoutControllerProvider('note:n1').notifier).reset();
       payments.outcome = null;
       await pay();
       expect(state().step, CheckoutStep.success);

@@ -1,7 +1,8 @@
 /**
  * Callable `getNoteFileUrl({ noteId })` — the ONLY way to open a full PDF.
  *
- * Allowed if: the caller owns the note (entitlement), or the note is free
+ * Allowed if: the caller owns the note (entitlement, not expired) or has an
+ * active bundle for its semester, or the note is free
  * and published, or the caller is an admin. Returns a signed URL that
  * expires after 10 minutes. Rate-limited and logged.
  *
@@ -23,11 +24,12 @@ import {
   STORAGE_BUCKET,
   StoragePaths,
 } from "../config";
+import { hasNoteAccess } from "../access/access";
 import { hitRateLimit } from "./rate_limit";
 
 export const SIGNED_URL_MINUTES = 10;
 
-export type AccessReason = "owner" | "free" | "admin";
+export type AccessReason = "owner" | "bundle" | "free" | "admin";
 
 /** A short-lived link to a private file. */
 export async function signedReadUrl(path: string): Promise<string> {
@@ -69,23 +71,19 @@ export async function handleGetNoteFileUrl(
   await hitRateLimit(uid, "noteFileUrl");
 
   const db = getFirestore();
-  const [note, owned] = await Promise.all([
-    db.collection(Collections.notes).doc(noteId).get(),
-    db
-      .collection(Collections.users)
-      .doc(uid)
-      .collection(Collections.entitlements)
-      .doc(noteId)
-      .get(),
-  ]);
+  const note = await db.collection(Collections.notes).doc(noteId).get();
   if (!note.exists) throw new HttpsError("not-found", "Note not found.");
 
-  let reason: AccessReason | null = null;
-  if (owned.exists) {
-    reason = "owner";
-  } else if (request.auth.token.admin === true) {
+  // Bought (not expired), or in an active semester bundle.
+  let reason: AccessReason | null = await hasNoteAccess(
+    uid,
+    noteId,
+    note.get("semesterId") as string | undefined,
+  );
+  if (!reason && request.auth.token.admin === true) {
     reason = "admin";
   } else if (
+    !reason &&
     note.get(NoteFields.isFree) === true &&
     note.get(NoteFields.isPublished) === true
   ) {

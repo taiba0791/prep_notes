@@ -19,6 +19,7 @@ import 'package:prepnotes/features/admin/presentation/admin_dashboard_page.dart'
 import 'package:prepnotes/features/admin/presentation/admin_ops_controllers.dart';
 import 'package:prepnotes/features/admin/presentation/admin_scaffold.dart';
 import 'package:prepnotes/features/admin/presentation/orders_admin_pages.dart';
+import 'package:prepnotes/features/admin/presentation/room_plans_admin_page.dart';
 import 'package:prepnotes/features/admin/presentation/users_admin_pages.dart';
 import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_session.dart';
@@ -52,6 +53,10 @@ class RecordingAdminRepository extends FirebaseAdminRepository {
   @override
   Future<void> markOrderRefunded(String orderId, {String reason = ''}) =>
       _record('refund:$orderId:$reason');
+
+  @override
+  Future<void> setRoomPlanPrice(String planKey, int price) =>
+      _record('plan:$planKey:$price');
 }
 
 class FakeDownloader implements FileDownloader {
@@ -148,6 +153,10 @@ void main() {
                           AdminOrderPage(orderId: s.pathParameters['id']!),
                     ),
                   ],
+                ),
+                GoRoute(
+                  path: 'room-plans',
+                  builder: (_, _) => const AdminRoomPlansPage(),
                 ),
                 GoRoute(
                   path: 'notes/:id/edit',
@@ -382,6 +391,29 @@ void main() {
       await pump(tester, RoutePaths.adminUser('ghost'));
       expect(find.text(AppStrings.userNotFound), findsOneWidget);
     });
+  });
+
+  group('Room plans', () {
+    for (final width in [400.0, 1400.0]) {
+      testWidgets('shows current prices; saving a new one ($width)', (
+        tester,
+      ) async {
+        await db.doc(FirestorePaths.roomPlans).set({
+          'm3': {'months': 3, 'price': 29900, 'razorpayPlanId': 'plan_x'},
+        });
+        await pump(tester, RoutePaths.adminRoomPlans, width: width);
+        expect(find.text('149'), findsOneWidget);
+        expect(find.text('299'), findsOneWidget);
+        expect(find.text('749'), findsOneWidget);
+
+        await tester.enterText(find.byType(TextFormField).at(1), '349');
+        await tester.tap(find.text(AppStrings.roomSave).at(1));
+        await tester.pumpAndSettle();
+        expect(repo.calls, ['plan:m3:34900']);
+        expect(find.text(AppStrings.priceUpdated), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 
   group('Orders', () {

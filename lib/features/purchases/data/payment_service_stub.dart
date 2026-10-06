@@ -17,4 +17,12 @@ class UnsupportedPaymentService implements PaymentService {
     required String description,
     required String themeColor,
   }) async => const PaymentFailed('unsupported');
+
+  @override
+  Future<PaymentOutcome> subscribe(
+    CheckoutSubscription subscription, {
+    required String name,
+    required String description,
+    required String themeColor,
+  }) async => const PaymentFailed('unsupported');
 }

@@ -24,6 +24,17 @@ export { verifyPayment } from "./payments/verify_payment";
 export { setAdminClaim } from "./admin/set_admin_claim";
 export { setUserDisabled } from "./admin/set_user_disabled";
 export { markOrderRefunded } from "./payments/refund_order";
+export {
+  expireRooms,
+  onRoomFileUploaded,
+  onRoomItemDeleted,
+} from "./room/room_files";
+export {
+  cancelRoomSubscription,
+  createRoomSubscription,
+  setRoomPlanPrice,
+  verifyRoomSubscription,
+} from "./room/subscriptions";
 export { recomputeStats } from "./stats/recompute_stats";
 export { onNoteStatsWritten } from "./stats/stats_triggers";
 

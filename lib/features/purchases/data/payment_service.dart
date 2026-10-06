@@ -15,14 +15,19 @@ sealed class PaymentOutcome {
 /// Razorpay says it's paid. The SERVER still has to verify [signature].
 class PaymentSucceeded extends PaymentOutcome {
   const PaymentSucceeded({
-    required this.orderId,
+    this.orderId = '',
     required this.paymentId,
     required this.signature,
+    this.subscriptionId = '',
   });
 
+  /// One-time payments (notes, bundles).
   final String orderId;
   final String paymentId;
   final String signature;
+
+  /// Auto-renew Room subscriptions.
+  final String subscriptionId;
 }
 
 /// The student closed the window without paying.
@@ -47,6 +52,14 @@ abstract interface class PaymentService {
 
   Future<PaymentOutcome> pay(
     CheckoutOrder order, {
+    required String name,
+    required String description,
+    required String themeColor,
+  });
+
+  /// Sets up auto-renew (UPI AutoPay / card mandate) and the first charge.
+  Future<PaymentOutcome> subscribe(
+    CheckoutSubscription subscription, {
     required String name,
     required String description,
     required String themeColor,

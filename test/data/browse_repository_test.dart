@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:prepnotes/core/constants/firestore_paths.dart';
+import 'package:prepnotes/data/models/access.dart';
 import 'package:prepnotes/data/models/note_query.dart';
 import 'package:prepnotes/data/models/recently_viewed.dart';
 import 'package:prepnotes/data/repositories/browse_repository.dart';
@@ -160,13 +161,37 @@ void main() {
     late FirestoreLibraryRepository library;
     setUp(() => library = FirestoreLibraryRepository(db));
 
-    test('ownsNote reads the entitlement', () async {
-      expect(await library.ownsNote('u1', 'n1'), isFalse);
-      await db.doc(FirestorePaths.entitlement('u1', 'n1')).set({
-        EntitlementFields.noteId: 'n1',
-      });
-      expect(await library.ownsNote('u1', 'n1'), isTrue);
-    });
+    test(
+      'noteAccess: own purchase or bundle, only while not expired',
+      () async {
+        final now = DateTime(2026, 10, 7);
+        Future<NoteAccess> access() =>
+            library.noteAccess('u1', 'n1', semesterId: 's3', now: now);
+        expect((await access()).kind, NoteAccessKind.none);
+
+        // Expired purchase → no access.
+        await db.doc(FirestorePaths.entitlement('u1', 'n1')).set({
+          EntitlementFields.expiresAt: Timestamp.fromDate(
+            DateTime(2026, 10, 1),
+          ),
+        });
+        expect((await access()).kind, NoteAccessKind.none);
+
+        // Active bundle for the semester → access via bundle.
+        await db.doc(FirestorePaths.bundle('u1', 's3')).set({
+          BundleFields.expiresAt: Timestamp.fromDate(DateTime(2027, 4, 7)),
+        });
+        final viaBundle = await access();
+        expect(viaBundle.kind, NoteAccessKind.bundle);
+        expect(viaBundle.until, DateTime(2027, 4, 7));
+
+        // Active own purchase wins.
+        await db.doc(FirestorePaths.entitlement('u1', 'n1')).set({
+          EntitlementFields.expiresAt: Timestamp.fromDate(DateTime(2027, 1, 1)),
+        });
+        expect((await access()).kind, NoteAccessKind.owner);
+      },
+    );
 
     test('recently viewed keeps the newest 20, newest first', () async {
       for (var i = 0; i < 23; i++) {

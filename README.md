@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 5 done — admin dashboard (live stats + 30-day revenue), users (search, disable, admin), orders (filters, refunds, CSV). |
+| Status | Phase 6 done — 6-month access, semester bundles (₹899 default), Resource Room locker + auto-renew Room subscriptions. |
 | Legal text | `lib/features/legal/domain/legal_content.dart` — a template; set `LegalInfo.operatorName` to your KYC name |
 
 ---
@@ -233,6 +233,34 @@ the output. Razorpay Dashboard (Test Mode) → Account & Settings → **Webhooks
 Use Razorpay's test details (Razorpay docs → *Test card / UPI details*), e.g.
 UPI ID `success@razorpay` (succeeds) or `failure@razorpay` (fails). Test-mode
 money is not real.
+
+### Access, bundles and the Resource Room (Phase 6)
+
+| What | Price | Gives | How long |
+|---|---|---|---|
+| A note | set per note | that note | 6 months |
+| Semester bundle | set per semester (Admin → Semesters; empty = ₹899) | every note of the semester + Resource Room | 6 months |
+| Room subscription | Admin → Room plans (₹149 / ₹399 / ₹749) | Resource Room | renews every 1 / 3 / 6 months until cancelled |
+
+- The **Resource Room** is each student's private locker: Drive + YouTube
+  links and their own uploads (PDF/photos, 25 MB each, 200 MB total).
+  Everything opens inside the app.
+- When a student's Room access ends (no active bundle or subscription), the
+  daily `expireRooms` job (03:00 IST) **deletes** their saved items and files.
+  The app warns them 14 days before.
+- Server checks everywhere: expired notes can't be opened (`getNoteFileUrl`),
+  Room data is guarded by `users/{uid}.roomAccessUntil` in Firestore + Storage
+  rules, and only Cloud Functions can set it.
+- Deleting an account cancels any Room subscription immediately.
+
+**Razorpay Subscriptions setup (one time):**
+1. Razorpay Dashboard → **Subscriptions** → enable (Test Mode works at once;
+   Live Mode may need Razorpay's approval).
+2. Webhooks → edit your PrepNotes webhook → also tick **subscription.activated,
+   subscription.charged, subscription.pending, subscription.halted,
+   subscription.cancelled, subscription.completed**.
+3. Plans are created automatically the first time a student subscribes (or
+   when you change a price in Admin → Room plans).
 
 ### Refunds
 

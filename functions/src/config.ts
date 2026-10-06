@@ -29,7 +29,29 @@ export const Collections = {
   fileAccessLogs: "fileAccessLogs",
   rateLimits: "rateLimits",
   statsDaily: "stats_daily",
+  semesters: "semesters",
+  bundles: "bundles", // users/{uid}/bundles/{semesterId}
+  roomItems: "roomItems", // users/{uid}/roomItems/{itemId}
+  subscriptions: "subscriptions", // subscriptions/{razorpaySubscriptionId}
+  config: "config",
 } as const;
+
+/** How long a note or semester bundle stays unlocked. */
+export const ACCESS_MONTHS = 6;
+
+/** Default semester bundle price when the admin hasn't set one (₹899). */
+export const DEFAULT_BUNDLE_PRICE = 89900;
+
+/** Resource Room storage limits. */
+export const ROOM_MAX_FILE_BYTES = 25 * 1024 * 1024;
+export const ROOM_QUOTA_BYTES = 200 * 1024 * 1024;
+
+/** Adds [months] calendar months to [from]. */
+export function addMonths(from: Date, months: number): Date {
+  const d = new Date(from.getTime());
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return d;
+}
 
 export const STATS_GLOBAL = "stats/global";
 
@@ -48,8 +70,18 @@ export const OrderFields = {
   refundedAt: "refundedAt",
   refundedBy: "refundedBy",
   refundReason: "refundReason",
+  type: "type", // OrderType
+  semesterId: "semesterId", // bundle orders
+  planKey: "planKey", // subscription charges
+  subscriptionId: "subscriptionId",
   userDeleted: "userDeleted",
   userDeletedAt: "userDeletedAt",
+} as const;
+
+export const OrderType = {
+  note: "note",
+  bundle: "bundle",
+  subscription: "subscription",
 } as const;
 
 export const OrderStatus = {
@@ -71,7 +103,66 @@ export const EntitlementFields = {
   subjectName: "subjectName",
   thumbnailUrl: "thumbnailUrl",
   pageCount: "pageCount",
+  expiresAt: "expiresAt",
 } as const;
+
+/** users/{uid}/bundles/{semesterId}: a semester bundle the student bought. */
+export const BundleFields = {
+  semesterId: "semesterId",
+  universityId: "universityId",
+  universityName: "universityName",
+  semesterNumber: "semesterNumber",
+  semesterName: "semesterName",
+  orderId: "orderId",
+  pricePaid: "pricePaid",
+  purchasedAt: "purchasedAt",
+  expiresAt: "expiresAt",
+} as const;
+
+export const SemesterFields = {
+  universityId: "universityId",
+  number: "number",
+  name: "name",
+  isActive: "isActive",
+  bundlePrice: "bundlePrice", // paise
+} as const;
+
+export const UniversityFields = { name: "name" } as const;
+
+/** subscriptions/{razorpaySubscriptionId}: a Resource Room subscription. */
+export const SubscriptionFields = {
+  userId: "userId",
+  planKey: "planKey",
+  razorpayPlanId: "razorpayPlanId",
+  amount: "amount",
+  status: "status", // Razorpay's: created, authenticated, active, pending, halted, cancelled, completed
+  currentEnd: "currentEnd", // paid until
+  cancelAtPeriodEnd: "cancelAtPeriodEnd",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+/** users/{uid}/roomItems/{itemId} */
+export const RoomItemFields = {
+  type: "type", // drive | youtube | file
+  title: "title",
+  url: "url",
+  storagePath: "storagePath",
+  fileName: "fileName",
+  contentType: "contentType",
+  sizeBytes: "sizeBytes",
+  createdAt: "createdAt",
+  searchKeywords: "searchKeywords",
+} as const;
+
+/** config/roomPlans: { m1: {months, price, razorpayPlanId}, m3: …, m6: … } */
+export const ROOM_PLANS_DOC = "config/roomPlans";
+export const RoomPlanDefaults = {
+  m1: { months: 1, price: 14900 },
+  m3: { months: 3, price: 39900 },
+  m6: { months: 6, price: 74900 },
+} as const;
+export type RoomPlanKey = keyof typeof RoomPlanDefaults;
 
 export const StatsFields = {
   totalStudents: "totalStudents",
@@ -107,6 +198,7 @@ export const StoragePaths = {
   notePdf: (noteId: string) => `notes_private/${noteId}/file.pdf`,
   notePreview: (noteId: string) => `notes_public/${noteId}/preview.pdf`,
   notePrivateFolder: (noteId: string) => `notes_private/${noteId}/`,
+  roomFolder: (uid: string) => `room/${uid}/`,
   notePublicFolder: (noteId: string) => `notes_public/${noteId}/`,
 } as const;
 
@@ -133,6 +225,8 @@ export const UserFields = {
   role: "role",
   email: "email",
   disabled: "disabled", // server-maintained mirror of the Auth flag
+  roomAccessUntil: "roomAccessUntil", // server: Resource Room open until
+  roomBytes: "roomBytes", // server: storage used by Room uploads
   createdAt: "createdAt",
 } as const;
 

@@ -9,6 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../../core/providers/firebase_providers.dart';
 import '../../features/purchases/domain/purchase_failure.dart';
+import '../models/access.dart';
 import '../models/purchase.dart';
 
 part 'purchases_repository.g.dart';
@@ -21,6 +22,9 @@ abstract final class PaymentFunctions {
   static const createOrder = 'createOrder';
   static const verifyPayment = 'verifyPayment';
   static const getNoteFileUrl = 'getNoteFileUrl';
+  static const createRoomSubscription = 'createRoomSubscription';
+  static const verifyRoomSubscription = 'verifyRoomSubscription';
+  static const cancelRoomSubscription = 'cancelRoomSubscription';
 }
 
 /// Purchases, orders and paid files. The app can only READ purchases;
@@ -35,8 +39,33 @@ abstract interface class PurchasesRepository {
   /// The student's orders (paid, failed, pending), newest first.
   Future<Paged<PurchaseOrder>> orders(String uid, {Object? cursor});
 
-  /// Step 1 of checkout. The server sets the price.
+  /// Step 1 of checkout for one note. The server sets the price.
   Future<CheckoutOrder> createOrder(String noteId);
+
+  /// Step 1 of checkout for a semester bundle (server price, default ₹899).
+  Future<CheckoutOrder> createBundleOrder(String semesterId);
+
+  /// The student's semester bundles (active and expired), newest first.
+  Future<List<SemesterBundle>> bundles(String uid);
+  Future<SemesterBundle?> bundle(String uid, String semesterId);
+
+  /// Resource Room: is it open (bundle or subscription), how full is it?
+  Future<RoomAccess> roomAccess(String uid);
+
+  /// The newest Room subscription, if any.
+  Future<RoomSubscription?> roomSubscription(String uid);
+
+  /// Room plan prices (defaults until the admin changes them).
+  Future<List<RoomPlan>> roomPlans();
+
+  /// Auto-renew: create → Razorpay → verify. Cancel stops future charges.
+  Future<CheckoutSubscription> createRoomSubscription(String planKey);
+  Future<void> verifyRoomSubscription({
+    required String subscriptionId,
+    required String paymentId,
+    required String signature,
+  });
+  Future<void> cancelRoomSubscription();
 
   /// Step 3: send Razorpay's proof of payment to the server.
   Future<void> verifyPayment({
@@ -125,6 +154,94 @@ class FirebasePurchasesRepository implements PurchasesRepository {
       CheckoutOrder.fromJson(
         await _call(PaymentFunctions.createOrder, {'noteId': noteId}),
       );
+
+  @override
+  Future<CheckoutOrder> createBundleOrder(String semesterId) async =>
+      CheckoutOrder.fromJson(
+        await _call(PaymentFunctions.createOrder, {'semesterId': semesterId}),
+      );
+
+  @override
+  Future<List<SemesterBundle>> bundles(String uid) async {
+    final snap = await _db
+        .collection(FirestorePaths.bundles(uid))
+        .orderBy(BundleFields.purchasedAt, descending: true)
+        .limit(PurchasesRepository.pageSize)
+        .get();
+    return [
+      for (final d in snap.docs)
+        SemesterBundle.fromJson({...d.data(), BundleFields.semesterId: d.id}),
+    ];
+  }
+
+  @override
+  Future<SemesterBundle?> bundle(String uid, String semesterId) async {
+    final d = await _db.doc(FirestorePaths.bundle(uid, semesterId)).get();
+    return d.exists
+        ? SemesterBundle.fromJson({...d.data()!, BundleFields.semesterId: d.id})
+        : null;
+  }
+
+  @override
+  Future<RoomAccess> roomAccess(String uid) async {
+    final d = (await _db.doc(FirestorePaths.user(uid)).get()).data();
+    if (d == null) return RoomAccess.closed;
+    final until = d[UserFields.roomAccessUntil];
+    return RoomAccess(
+      until: until is Timestamp ? until.toDate() : null,
+      bytesUsed: (d[UserFields.roomBytes] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  @override
+  Future<RoomSubscription?> roomSubscription(String uid) async {
+    final snap = await _db
+        .collection(FirestoreCollections.subscriptions)
+        .where(SubscriptionFields.userId, isEqualTo: uid)
+        .limit(PurchasesRepository.pageSize)
+        .get();
+    final subs =
+        [
+          for (final d in snap.docs)
+            RoomSubscription.fromJson({...d.data(), 'id': d.id}),
+        ]..sort(
+          (a, b) => (b.createdAt ?? DateTime(0)).compareTo(
+            a.createdAt ?? DateTime(0),
+          ),
+        );
+    // Prefer one that still renews or is paid; else the newest.
+    final now = DateTime.now();
+    return subs.where((s) => s.renews || s.isPaidAt(now)).firstOrNull ??
+        subs.firstOrNull;
+  }
+
+  @override
+  Future<List<RoomPlan>> roomPlans() async => RoomPlan.fromConfig(
+    (await _db.doc(FirestorePaths.roomPlans).get()).data(),
+  );
+
+  @override
+  Future<CheckoutSubscription> createRoomSubscription(String planKey) async =>
+      CheckoutSubscription.fromJson(
+        await _call(PaymentFunctions.createRoomSubscription, {
+          'planKey': planKey,
+        }),
+      );
+
+  @override
+  Future<void> verifyRoomSubscription({
+    required String subscriptionId,
+    required String paymentId,
+    required String signature,
+  }) => _call(PaymentFunctions.verifyRoomSubscription, {
+    'subscriptionId': subscriptionId,
+    'paymentId': paymentId,
+    'signature': signature,
+  });
+
+  @override
+  Future<void> cancelRoomSubscription() =>
+      _call(PaymentFunctions.cancelRoomSubscription, {});
 
   @override
   Future<void> verifyPayment({

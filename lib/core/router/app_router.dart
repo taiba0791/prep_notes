@@ -8,6 +8,7 @@ import '../../features/admin/presentation/admin_scaffold.dart';
 import '../../features/admin/presentation/catalog_pages.dart';
 import '../../features/admin/presentation/notes_admin_pages.dart';
 import '../../features/admin/presentation/orders_admin_pages.dart';
+import '../../features/admin/presentation/room_plans_admin_page.dart';
 import '../../features/admin/presentation/users_admin_pages.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/auth_session.dart';
@@ -26,6 +27,9 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/purchases/presentation/checkout_screen.dart';
 import '../../features/purchases/presentation/my_purchases_screen.dart';
 import '../../features/purchases/presentation/note_viewer_screen.dart';
+import '../../features/purchases/presentation/purchases_controllers.dart';
+import '../../features/resources/presentation/resource_room_screen.dart';
+import '../../features/resources/presentation/room_item_screen.dart';
 import '../constants/app_strings.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/not_found_screen.dart';
@@ -166,7 +170,21 @@ GoRouter appRouter(Ref ref) {
           ),
           // 3 · Resources
           StatefulShellBranch(
-            routes: [_page(RoutePaths.resources, AppStrings.navResources)],
+            routes: [
+              GoRoute(
+                path: RoutePaths.resources,
+                builder: (context, state) => const ResourceRoomScreen(),
+                routes: [
+                  // A saved item, full screen (opens inside the app).
+                  GoRoute(
+                    path: 'item/:itemId',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) =>
+                        RoomItemScreen(itemId: state.pathParameters['itemId']!),
+                  ),
+                ],
+              ),
+            ],
           ),
           // 4 · Profile (+ My Purchases)
           StatefulShellBranch(
@@ -211,9 +229,31 @@ GoRouter appRouter(Ref ref) {
       // Checkout (full screen)
       // Checkout (website; signed-in only — see route_guards).
       GoRoute(
+        path: '/checkout/bundle/:semesterId',
+        builder: (context, state) => CheckoutScreen(
+          target: CheckoutTarget(
+            CheckoutKind.bundle,
+            state.pathParameters['semesterId']!,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/checkout/room/:planKey',
+        builder: (context, state) => CheckoutScreen(
+          target: CheckoutTarget(
+            CheckoutKind.room,
+            state.pathParameters['planKey']!,
+          ),
+        ),
+      ),
+      GoRoute(
         path: '/checkout/:noteId',
-        builder: (context, state) =>
-            CheckoutScreen(noteId: state.pathParameters['noteId']!),
+        builder: (context, state) => CheckoutScreen(
+          target: CheckoutTarget(
+            CheckoutKind.note,
+            state.pathParameters['noteId']!,
+          ),
+        ),
       ),
 
       // Admin panel: its own shell (dark side menu), guarded by adminGuard.
@@ -280,7 +320,10 @@ GoRouter appRouter(Ref ref) {
                   ),
                 ],
               ),
-              _page('resources', AppStrings.pageAdminResources),
+              GoRoute(
+                path: 'room-plans',
+                builder: (context, state) => const AdminRoomPlansPage(),
+              ),
               _page('student-voice', AppStrings.pageAdminStudentVoice),
             ],
           ),

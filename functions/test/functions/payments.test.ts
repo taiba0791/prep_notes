@@ -3,7 +3,7 @@
  * getNoteFileUrl. Runs against the Firestore + Storage emulators; the
  * Razorpay API is replaced by a fake (no network, no real keys).
  */
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -150,7 +150,10 @@ describe("createOrder", () => {
     for (const [noteId, code] of cases) {
       await expect(createOrder(req("alice", { noteId }))).rejects.toMatchObject({ code });
     }
-    await db().doc("users/alice/entitlements/paid").set({ noteId: "paid" });
+    await db().doc("users/alice/entitlements/paid").set({
+      noteId: "paid",
+      expiresAt: Timestamp.fromMillis(Date.now() + 86_400_000),
+    });
     await expect(createOrder(req("alice", { noteId: "paid" }))).rejects.toMatchObject({
       code: "already-exists",
     });
@@ -278,7 +281,10 @@ describe("getNoteFileUrl", () => {
   });
 
   it("gives a short-lived link to owners, free notes and admins — and logs it", async () => {
-    await db().doc("users/alice/entitlements/paid").set({ noteId: "paid" });
+    await db().doc("users/alice/entitlements/paid").set({
+      noteId: "paid",
+      expiresAt: Timestamp.fromMillis(Date.now() + 86_400_000),
+    });
     const owner = await call("alice", "paid");
     expect(owner.url).toContain(encodeURIComponent("notes_private/paid/file.pdf"));
     expect(owner.expiresInSeconds).toBe(600);

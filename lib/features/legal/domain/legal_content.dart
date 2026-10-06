@@ -14,7 +14,7 @@ abstract final class LegalInfo {
   static const operatorName = 'Taiba Khwaja Shaikh';
   static const email = 'prep.notes247@gmail.com';
   static const country = 'India';
-  static const lastUpdated = '6 October 2026';
+  static const lastUpdated = '7 October 2026';
   static const replyWithin = '2 working days';
   static const refundRequestDays = 7;
   static const deliveryHours = 24;
@@ -60,9 +60,11 @@ abstract final class LegalContent {
       LegalSection(
         'What we offer',
         bullets: [
-          'Notes for sale, filed under your university, semester, subject and module.',
+          'Notes for sale, filed under your university, semester, subject and module '
+              '(6 months of access each), or a whole-semester bundle.',
           'A free preview of the first pages, so you know what you are buying.',
-          'A free Resource Room with papers, question banks and useful links.',
+          'The Resource Room: your private study locker for Drive links, YouTube '
+              'videos and your own class notes (with a bundle or a subscription).',
           'A Study Zone with Pomodoro and stopwatch timers.',
           'Student Voice — tell us which notes or features you want next.',
         ],
@@ -94,6 +96,8 @@ abstract final class LegalContent {
               'Card, UPI and bank details are handled by our payment partner Razorpay — '
               'we never see or store them.',
           'Activity in the app: notes you recently viewed, study sessions and feedback you submit.',
+          'Resource Room content you save: links, titles and the files you upload. '
+              'Only you can see them.',
           'Technical data: device and browser type, crash reports and basic usage '
               'statistics, to keep the app working and improve it.',
         ],
@@ -132,8 +136,11 @@ abstract final class LegalContent {
         paragraphs: [
           'We keep your data while your account exists. When you delete your '
               'account (Profile → Delete account), we delete your profile, photo, '
-              'study history and access records. Order records are kept without '
-              'your personal details, as needed for accounting and tax law.',
+              'study history, access records and Resource Room items. Order records '
+              'are kept without your personal details, as needed for accounting and '
+              'tax law.',
+          'Resource Room items and uploads are deleted automatically when your '
+              'Resource Room access ends (see the Terms).',
         ],
       ),
       LegalSection(
@@ -187,13 +194,40 @@ abstract final class LegalContent {
         ],
       ),
       LegalSection(
-        'Buying notes',
+        'Buying notes and bundles',
         bullets: [
-          'Prices are shown in Indian Rupees (₹) on each note, including any applicable taxes.',
+          'Prices are shown in Indian Rupees (₹), including any applicable taxes.',
           'Payments are processed securely by Razorpay. A purchase is complete only '
               'when the payment is confirmed.',
-          'After payment, the notes appear in My Purchases on all your devices.',
+          'A note gives you access for 6 months from the date of purchase. After '
+              'that it locks; you can buy it again at the current price.',
+          'A semester bundle gives you every note of that semester (including notes '
+              'added during the period) and the Resource Room, for 6 months from the '
+              'date of purchase.',
+          'After payment, your notes appear in My Purchases on all your devices, '
+              'with the date access ends.',
           'Refunds follow our Refund & Cancellation Policy.',
+        ],
+      ),
+      LegalSection(
+        'Resource Room and subscriptions',
+        bullets: [
+          'The Resource Room is a private space to save your own Google Drive and '
+              'YouTube links and upload your own files (PDF or photos, up to 25 MB '
+              'each and 200 MB in total). It is included with a semester bundle, or '
+              'available as a subscription.',
+          'Subscriptions (1, 3 or 6 months) renew automatically and are charged to '
+              'the payment method you approve with Razorpay (for example UPI AutoPay '
+              'or a card), at the price shown when you subscribed, until you cancel.',
+          'You can cancel auto-renewal at any time in My Purchases. You keep access '
+              'until the end of the period you have paid for; we do not refund '
+              'partly used periods.',
+          'When your Resource Room access ends (your bundle ends and you have no '
+              'active subscription), the links and files you saved there are '
+              'permanently deleted. We warn you in the app 14 days before. Keep '
+              'your own copies of anything important.',
+          'Only upload content you have the right to use. Do not upload anything '
+              'illegal, harmful or that infringes others’ rights.',
         ],
       ),
       LegalSection(
@@ -268,8 +302,11 @@ abstract final class LegalContent {
       LegalSection(
         'No refund if',
         bullets: [
-          'You changed your mind after the notes were unlocked.',
+          'You changed your mind after the notes or bundle were unlocked.',
           'You bought the wrong notes even though the preview and description were correct.',
+          'Your access period (6 months) has ended.',
+          'A subscription period has already started. Cancel auto-renew before the '
+              'next renewal date to avoid the next charge.',
         ],
       ),
       LegalSection(
@@ -285,13 +322,16 @@ abstract final class LegalContent {
         paragraphs: [
           'Approved refunds go back to the original payment method through '
               'Razorpay, usually within 5–7 working days (your bank may take '
-              'longer). Access to refunded notes is removed.',
+              'longer). Access to refunded notes or bundles is removed; for a '
+              'refunded bundle, the Resource Room closes too.',
         ],
       ),
       LegalSection(
         'Cancellations',
         paragraphs: [
-          'If you close the payment window before paying, nothing is charged. '
+          'Subscriptions: cancel auto-renew any time in My Purchases; you are not '
+              'charged again and keep access until the paid period ends. '
+              'If you close the payment window before paying, nothing is charged. '
               'If money left your account but the order failed, it is returned '
               'automatically by Razorpay / your bank, usually within 5–7 working days.',
         ],
@@ -311,6 +351,9 @@ abstract final class LegalContent {
           'Your notes appear in My Purchases and open in the PrepNotes viewer on web, '
               'Android and iOS, using the same account.',
           'Free notes are available straight away after you sign in.',
+          'Paid notes and semester bundles stay available for 6 months from purchase; '
+              'the end date is shown in My Purchases.',
+          'The Resource Room opens instantly with a semester bundle or a subscription.',
         ],
       ),
       LegalSection(

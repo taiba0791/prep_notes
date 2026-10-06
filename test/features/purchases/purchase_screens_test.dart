@@ -19,6 +19,7 @@ import 'package:prepnotes/features/purchases/domain/purchase_failure.dart';
 import 'package:prepnotes/features/purchases/presentation/checkout_screen.dart';
 import 'package:prepnotes/features/purchases/presentation/my_purchases_screen.dart';
 import 'package:prepnotes/features/purchases/presentation/note_viewer_screen.dart';
+import 'package:prepnotes/features/purchases/presentation/purchases_controllers.dart';
 
 import '../../fakes/fake_auth_repository.dart';
 import '../../fakes/fake_purchases.dart';
@@ -58,7 +59,9 @@ void main() {
       routes: [
         GoRoute(
           path: '/checkout/:id',
-          builder: (_, s) => CheckoutScreen(noteId: s.pathParameters['id']!),
+          builder: (_, s) => CheckoutScreen(
+            target: CheckoutTarget(CheckoutKind.note, s.pathParameters['id']!),
+          ),
         ),
         GoRoute(
           path: RoutePaths.purchases,
@@ -145,6 +148,7 @@ void main() {
       await addNote('n1');
       await db.doc(FirestorePaths.entitlement('alice', 'n1')).set({
         EntitlementFields.noteId: 'n1',
+        EntitlementFields.expiresAt: Timestamp.fromDate(DateTime(2099)),
       });
       await pump(tester, RoutePaths.checkout('n1'));
       expect(find.text(AppStrings.readNow), findsOneWidget);
@@ -189,8 +193,14 @@ void main() {
             title: 'Data Structures',
             subjectName: 'DS',
             purchasedAt: DateTime(2026, 10, 6),
+            expiresAt: DateTime(2099, 4, 6),
           ),
-          const Purchase(noteId: 'n2', title: 'Operating Systems'),
+          // Expired → "Buy again".
+          Purchase(
+            noteId: 'n2',
+            title: 'Operating Systems',
+            expiresAt: DateTime(2020, 1, 1),
+          ),
         ];
         repo.orderList = [
           PurchaseOrder(
@@ -213,7 +223,8 @@ void main() {
         await pump(tester, RoutePaths.purchases, width: width);
         expect(find.text('Data Structures'), findsOneWidget);
         expect(find.text('Operating Systems'), findsOneWidget);
-        expect(find.textContaining('Bought 6 Oct 2026'), findsOneWidget);
+        expect(find.textContaining('Access until 6 Apr 2099'), findsOneWidget);
+        expect(find.text(AppStrings.buyAgain), findsOneWidget);
 
         await tester.enterText(find.byType(TextField), 'operating');
         await tester.pumpAndSettle();

@@ -17,13 +17,16 @@ import {
   onCall,
 } from "firebase-functions/v2/https";
 import {
+  BundleFields,
   Collections,
   EntitlementFields,
   NoteFields,
   OrderFields,
   OrderStatus,
+  OrderType,
   StatsFields,
 } from "../config";
+import { refreshRoomAccess } from "../access/access";
 import { idFrom, requireAdmin } from "../admin/require_admin";
 import { bumpDaily, bumpGlobal } from "../stats/stats";
 
@@ -38,6 +41,7 @@ export async function handleMarkOrderRefunded(
   const db = getFirestore();
   const orderRef = db.collection(Collections.orders).doc(orderId);
 
+  let refreshUid: string | null = null;
   const result = await db.runTransaction(async (tx) => {
     const order = await tx.get(orderRef);
     if (!order.exists) throw new HttpsError("not-found", "Order not found.");
@@ -52,28 +56,46 @@ export async function handleMarkOrderRefunded(
     const uid = order.get(OrderFields.userId) as string;
     const noteIds = (order.get(OrderFields.noteIds) as string[]) ?? [];
     const amount = (order.get(OrderFields.amount) as number) ?? 0;
-    const entRefs = noteIds.map((id) =>
-      db.collection(Collections.users).doc(uid)
-        .collection(Collections.entitlements).doc(id),
-    );
-    // All reads first (Firestore transactions: reads before writes).
-    const ents = entRefs.length ? await tx.getAll(...entRefs) : [];
-    const notes = noteIds.length
-      ? await tx.getAll(...noteIds.map((id) => db.collection(Collections.notes).doc(id)))
-      : [];
-
-    // Only remove access that came from THIS order.
+    const type = order.get(OrderFields.type) ?? OrderType.note;
+    const userRef = db.collection(Collections.users).doc(uid);
     const removed: string[] = [];
-    ents.forEach((e, i) => {
-      if (!e.exists || e.get(EntitlementFields.orderId) !== orderId) return;
-      removed.push(noteIds[i]);
-      tx.delete(e.ref);
-      if (notes[i].exists) {
-        tx.update(notes[i].ref, {
-          [NoteFields.purchaseCount]: FieldValue.increment(-1),
-        });
+    let purchasesRemoved = 0;
+
+    if (type === OrderType.bundle) {
+      const semesterId = order.get(OrderFields.semesterId) as string;
+      const bundleRef = userRef.collection(Collections.bundles).doc(semesterId);
+      const bundle = await tx.get(bundleRef);
+      if (bundle.exists && bundle.get(BundleFields.orderId) === orderId) {
+        tx.delete(bundleRef);
+        removed.push(`bundle:${semesterId}`);
+        purchasesRemoved = 1;
+        refreshUid = uid;
       }
-    });
+    } else if (type === OrderType.note) {
+      const entRefs = noteIds.map((id) =>
+        userRef.collection(Collections.entitlements).doc(id),
+      );
+      // All reads first (Firestore transactions: reads before writes).
+      const ents = entRefs.length ? await tx.getAll(...entRefs) : [];
+      const notes = noteIds.length
+        ? await tx.getAll(...noteIds.map((id) => db.collection(Collections.notes).doc(id)))
+        : [];
+      // Only remove access that came from THIS order.
+      ents.forEach((e, i) => {
+        if (!e.exists || e.get(EntitlementFields.orderId) !== orderId) return;
+        removed.push(noteIds[i]);
+        tx.delete(e.ref);
+        if (notes[i].exists) {
+          tx.update(notes[i].ref, {
+            [NoteFields.purchaseCount]: FieldValue.increment(-1),
+          });
+        }
+      });
+      purchasesRemoved = removed.length;
+    }
+    // Subscription charges: only recorded here; cancel the subscription
+    // itself in the Razorpay Dashboard.
+
     tx.update(orderRef, {
       [OrderFields.status]: OrderStatus.refunded,
       [OrderFields.refundedAt]: FieldValue.serverTimestamp(),
@@ -81,13 +103,15 @@ export async function handleMarkOrderRefunded(
       [OrderFields.refundReason]: reason,
     });
     bumpGlobal(tx, {
-      [StatsFields.totalPurchases]: -removed.length,
+      [StatsFields.totalPurchases]: -purchasesRemoved,
       [StatsFields.totalRevenue]: -amount,
     });
     bumpDaily(tx, { revenue: -amount, refunds: 1 });
     return { status: "refunded" as const, removedNotes: removed };
   });
 
+  // A refunded bundle no longer opens the Resource Room.
+  if (refreshUid) await refreshRoomAccess(refreshUid);
   logger.info("Order refund recorded", { orderId, adminUid, ...result });
   return result;
 }

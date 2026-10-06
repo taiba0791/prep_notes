@@ -50,6 +50,7 @@ abstract final class AdminFunctions {
   static const setUserDisabled = 'setUserDisabled';
   static const setAdminClaim = 'setAdminClaim';
   static const markOrderRefunded = 'markOrderRefunded';
+  static const setRoomPlanPrice = 'setRoomPlanPrice';
 }
 
 /// Everything the admin dashboard, Users and Orders pages read and do.
@@ -80,6 +81,9 @@ abstract interface class AdminRepository {
 
   /// RECORDS a refund made in the Razorpay Dashboard (moves no money).
   Future<void> markOrderRefunded(String orderId, {String reason = ''});
+
+  /// New price (paise) for a Resource Room plan (m1 | m3 | m6).
+  Future<void> setRoomPlanPrice(String planKey, int price);
 }
 
 class FirebaseAdminRepository implements AdminRepository {
@@ -237,6 +241,12 @@ class FirebaseAdminRepository implements AdminRepository {
   @override
   Future<void> setAdmin(String email, {required bool admin}) =>
       _call(AdminFunctions.setAdminClaim, {'email': email, 'admin': admin});
+
+  @override
+  Future<void> setRoomPlanPrice(String planKey, int price) => _call(
+    AdminFunctions.setRoomPlanPrice,
+    {'planKey': planKey, 'price': price},
+  );
 
   @override
   Future<void> markOrderRefunded(String orderId, {String reason = ''}) => _call(

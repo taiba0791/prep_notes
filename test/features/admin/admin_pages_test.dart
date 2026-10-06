@@ -221,6 +221,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Semester 4'), findsOneWidget);
+    // No price typed → stored without one (= the default ₹899).
+    final s4 = (await db.collection('semesters').get()).docs.firstWhere(
+      (d) => d.data()[SemesterFields.number] == 4,
+    );
+    expect(s4.data().containsKey(SemesterFields.bundlePrice), isFalse);
+  });
+
+  testWidgets('Semesters: set a bundle price', (tester) async {
+    await seedCatalog();
+    await pump(tester, RoutePaths.adminSemesters);
+    await choose(tester, AppStrings.pickUniversity, 'University of Mumbai');
+    await tester.tap(find.byIcon(Icons.edit_outlined).first);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(field(AppStrings.bundlePriceLabel), '0.50');
+    await tester.tap(find.widgetWithText(FilledButton, AppStrings.save));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.priceInvalid), findsOneWidget);
+
+    await tester.enterText(field(AppStrings.bundlePriceLabel), '699');
+    await tester.tap(find.widgetWithText(FilledButton, AppStrings.save));
+    await tester.pumpAndSettle();
+    final s3 = await db.doc('semesters/s3').get();
+    expect(s3.get(SemesterFields.bundlePrice), 69900);
   });
 
   group('Notes', () {

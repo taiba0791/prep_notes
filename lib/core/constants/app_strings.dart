@@ -73,7 +73,7 @@ abstract final class AppStrings {
   static const pageAdminUser = 'Admin · User details';
   static const pageAdminOrders = 'Admin · Orders';
   static const pageAdminOrder = 'Admin · Order details';
-  static const pageAdminResources = 'Admin · Resources';
+  static const pageAdminRoomPlans = 'Admin · Room plans';
   static const pageAdminStudentVoice = 'Admin · Student Voice';
 
   // Auth errors (shown on login / register / password screens)
@@ -222,7 +222,6 @@ abstract final class AppStrings {
   static const buyToUnlock = 'Buy to unlock';
   static const buyNow = 'Buy now';
   static const readPreview = 'Read free preview';
-  static const youOwnThis = 'You own these notes';
   static const noPreview = 'No free preview for these notes.';
   static String moreFrom(String what) => what;
   static const moreFromStart = 'More from ';
@@ -261,7 +260,7 @@ abstract final class AppStrings {
   static const adminNotes = 'Notes';
   static const adminUsers = 'Users';
   static const adminOrders = 'Orders';
-  static const adminResources = 'Resources';
+  static const adminRoomPlans = 'Room plans';
   static const adminStudentVoice = 'Student Voice';
   static const adminStatStudents = 'Students';
   static const adminStatNotes = 'Notes';
@@ -567,4 +566,125 @@ abstract final class AppStrings {
       'revenue numbers go down.';
   static const refundReasonLabel = 'Reason (optional)';
   static const refundRecorded = 'Refund recorded.';
+
+  // ── Access, bundles, Resource Room, subscriptions (Phase 6) ──
+  static String accessUntil(String date) => 'Access until $date';
+  static String expiredOn(String date) => 'Expired $date';
+  static const expired = 'Expired';
+  static const buyAgain = 'Buy again';
+  static String includedInBundle(String date) =>
+      'Included in your semester bundle · until $date';
+  static const accessSixMonths = '6 months of access';
+
+  static const bundleTitle = 'Whole semester bundle';
+  static String bundleNotes(int n) =>
+      n == 1 ? 'All 1 note of this semester' : 'All $n notes of this semester';
+  static const bundleLaterNotes = 'Plus notes added later in the 6 months';
+  static const bundleRoom = 'Resource Room included, free';
+  static const bundleSixMonths = 'Access for 6 months';
+  static const buyBundle = 'Buy the bundle';
+  static String bundleActive(String date) =>
+      'You have this bundle · until $date';
+  static String semesterBundleName(int n) => 'Semester $n bundle';
+  static const bundleRenew = 'Renew bundle';
+
+  static const roomTitle = 'Resource Room';
+  static const roomTagline =
+      'Your own study locker: save Drive notes, YouTube lectures and class '
+      'notes in one place, open them inside PrepNotes, and stay in focus mode.';
+  static const roomPremium = 'Premium';
+  static const roomWithBundle = 'Free with any semester bundle';
+  static const roomOrSubscribe = 'Or get the Resource Room on its own';
+  static const roomFeatureLinks = 'Save Google Drive and YouTube links';
+  static const roomFeatureFiles =
+      'Upload PDFs and photos of class notes (200 MB)';
+  static const roomFeatureInApp = 'Everything opens inside PrepNotes';
+  static const roomFeatureSearch = 'One list with search and filters';
+  static const seeBundles = 'See semester bundles';
+  static const subscribe = 'Subscribe';
+  static String perMonths(int months) =>
+      months == 1 ? 'per month' : 'every $months months';
+  static String planName(int months) =>
+      months == 1 ? '1 month' : '$months months';
+  static const autoRenewNote =
+      'Renews automatically. Cancel any time in My Purchases — you keep '
+      'access until the end of the paid period.';
+  static const roomEmptyTitle = 'Your Resource Room is empty';
+  static const roomEmptyMessage =
+      'Add a Drive link, a YouTube video or upload your class notes.';
+  static const roomSearchHint = 'Search your Resource Room';
+  static const roomAll = 'All';
+  static const roomDrive = 'Drive';
+  static const roomYoutube = 'YouTube';
+  static const roomFiles = 'Files';
+  static const roomAdd = 'Add';
+  static const roomAddLink = 'Add a link';
+  static const roomUpload = 'Upload a file';
+  static const roomLinkLabel = 'Google Drive or YouTube link';
+  static const roomLinkHelp =
+      'Tip: for Drive, set sharing to “Anyone with the link” so it opens '
+      'inside PrepNotes.';
+  static const roomTitleLabel = 'Title';
+  static const roomBadLink = 'Paste a Google Drive or YouTube link.';
+  static const roomTitleRequired = 'Give it a title.';
+  static const roomSave = 'Save';
+  static const roomUploading = 'Uploading…';
+  static const roomTooBig = 'Files can be up to 25 MB.';
+  static const roomQuotaFull =
+      'Your Resource Room is full (200 MB). Delete something first.';
+  static const roomBadType = 'Upload a PDF, JPG, PNG or WebP file.';
+  static const roomNotOpen = 'Your Resource Room access has ended.';
+  static const roomFailed = "Couldn't save that. Please try again.";
+  static const roomSaved = 'Saved to your Resource Room.';
+  static const roomDeleted = 'Deleted.';
+  static const roomRename = 'Rename';
+  static String roomUsage(String used, String total) => '$used of $total used';
+  static String roomEndsIn(int days, String date) =>
+      'Your Resource Room access ends in $days day${days == 1 ? '' : 's'} '
+      '($date). Everything saved here will then be deleted.';
+  static const roomKeepAccess = 'Keep access';
+  static const roomItemNotFound =
+      'This item is no longer in your Resource Room.';
+  static const openInDrive = 'Open in Drive';
+  static const openOnYoutube = 'Open on YouTube';
+  static const openFile = 'Open file';
+  static const driveNeedsSharing =
+      'If this stays blank, the Drive file is private. Set sharing to '
+      '“Anyone with the link”, or open it in Drive.';
+
+  static const purchasesBundlesTab = 'Bundles & Room';
+  static const noBundlesTitle = 'No bundles or subscriptions';
+  static const noBundlesMessage =
+      'A semester bundle unlocks every note of a semester and the Resource Room.';
+  static const roomSubscriptionTitle = 'Resource Room subscription';
+  static String renewsOn(String date) => 'Renews $date';
+  static String endsOn(String date) => 'Ends $date (auto-renew is off)';
+  static const subscriptionPending =
+      'Payment pending — Razorpay is retrying. Your access continues for now.';
+  static const cancelAutoRenew = 'Cancel auto-renew';
+  static const cancelAutoRenewTitle = 'Cancel auto-renew?';
+  static String cancelAutoRenewMessage(String date) =>
+      "You won't be charged again. You keep the Resource Room until $date; "
+      'after that, everything saved in it is deleted.';
+  static const keepSubscription = 'Keep it';
+  static const autoRenewCancelled = 'Auto-renew cancelled.';
+  static const alreadySubscribed =
+      'You already have a Resource Room subscription.';
+
+  static const checkoutAutoRenewTerms =
+      'You authorise Razorpay to charge this amount automatically each period '
+      'until you cancel. Cancel any time in My Purchases.';
+  static const orderTypeNote = 'Note';
+  static const orderTypeBundle = 'Semester bundle';
+  static const orderTypeSubscription = 'Room subscription';
+
+  static const bundlePriceLabel = 'Bundle price (₹)';
+  static const bundlePriceHelp =
+      'Whole-semester bundle for 6 months. Empty = ₹899.';
+  static const roomPlansSubtitle =
+      'Prices of the Resource Room subscriptions. Changing a price creates a '
+      'new Razorpay plan; current subscribers keep their old price.';
+  static const priceLabel = 'Price (₹)';
+  static const priceInvalid = 'Enter a price between ₹1 and ₹1,00,000.';
+  static const priceUpdated = 'Price updated.';
 }

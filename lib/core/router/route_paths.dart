@@ -44,6 +44,12 @@ abstract final class RoutePaths {
   // Purchases & checkout
   static const purchases = '/purchases';
   static String checkout(String noteId) => '/checkout/$noteId';
+  static String checkoutBundle(String semesterId) =>
+      '/checkout/bundle/$semesterId';
+  static String checkoutRoom(String planKey) => '/checkout/room/$planKey';
+
+  /// One saved item in the Resource Room (full screen).
+  static String roomItem(String itemId) => '/resources/item/$itemId';
 
   // Other main sections
   static const studyZone = '/study-zone';
@@ -66,6 +72,6 @@ abstract final class RoutePaths {
   static String adminUser(String uid) => '/admin/users/$uid';
   static const adminOrders = '/admin/orders';
   static String adminOrder(String orderId) => '/admin/orders/$orderId';
-  static const adminResources = '/admin/resources';
+  static const adminRoomPlans = '/admin/room-plans';
   static const adminStudentVoice = '/admin/student-voice';
 }

@@ -9,8 +9,10 @@ abstract final class StoragePaths {
       'notes_public/$noteId/thumbnail.jpg';
   static String notePreview(String noteId) =>
       'notes_public/$noteId/preview.pdf';
-  static String resourceFile(String resourceId, String fileName) =>
-      'resources/$resourceId/$fileName';
+
+  /// A Resource Room upload (private to the student).
+  static String roomFile(String uid, String itemId, String fileName) =>
+      'room/$uid/$itemId/$fileName';
 
   /// Public read, admin write.
   static String universityLogo(String universityId) =>
