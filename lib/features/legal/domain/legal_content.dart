@@ -11,7 +11,7 @@ abstract final class LegalInfo {
   static const brand = 'PrepNotes';
 
   /// The person or business that runs PrepNotes — must match your KYC name.
-  static const operatorName = 'PrepNotes';
+  static const operatorName = 'Taiba Khwaja Shaikh';
   static const email = 'prep.notes247@gmail.com';
   static const country = 'India';
   static const lastUpdated = '6 October 2026';
