@@ -7,6 +7,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/router/route_paths.dart';
 import '../../../core/services/photo_picker.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/theme_mode_button.dart';
 import '../../../core/widgets/user_avatar.dart';
@@ -16,6 +17,7 @@ import '../../../data/repositories/university_repository.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/current_user_providers.dart';
 import '../../auth/domain/auth_session.dart';
+import '../../notes/presentation/browse_providers.dart';
 import 'account_controllers.dart';
 import 'delete_account_dialog.dart';
 import 'profile_controllers.dart';
@@ -81,6 +83,7 @@ class _ProfileContent extends ConsumerWidget {
             _AcademicCard(profile: profile),
             const SizedBox(height: 16),
             _StatsGrid(profile: profile, columns: columns),
+            const _RecentlyViewedSection(),
             const SizedBox(height: 16),
             _Links(session: session),
           ],
@@ -381,12 +384,7 @@ class _StatsGrid extends StatelessWidget {
         label: AppStrings.statStudyTime,
         value: AppStrings.studyMinutes(profile.totalStudyMinutes),
       ),
-      const _StatTile(
-        icon: Icons.history,
-        label: AppStrings.statRecentlyViewed,
-        value: '—',
-        hint: AppStrings.comingSoon,
-      ),
+      const _RecentlyViewedTile(),
     ];
 
     if (columns == 1) {
@@ -542,6 +540,52 @@ class _Links extends ConsumerWidget {
               style: TextStyle(color: scheme.error),
             ),
             onTap: () => _deleteAccount(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Recently viewed" stat tile: how many notes the user opened (max 20).
+class _RecentlyViewedTile extends ConsumerWidget {
+  const _RecentlyViewedTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(recentlyViewedProvider).value?.length;
+    return _StatTile(
+      icon: Icons.history,
+      label: AppStrings.statRecentlyViewed,
+      value: count == null ? '…' : '$count',
+    );
+  }
+}
+
+/// The notes themselves, newest first (hidden when empty).
+class _RecentlyViewedSection extends ConsumerWidget {
+  const _RecentlyViewedSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(recentlyViewedProvider).value ?? const [];
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            AppStrings.statRecentlyViewed,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
+          ResponsiveGrid(
+            desktopColumns: 3,
+            spacing: 12,
+            children: [
+              for (final r in items.take(6)) NoteCard(note: r.toNote()),
+            ],
           ),
         ],
       ),

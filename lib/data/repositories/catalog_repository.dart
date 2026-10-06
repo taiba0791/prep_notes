@@ -33,6 +33,11 @@ abstract interface class CatalogRepository {
   Future<List<Subject>> subjects(String semesterId);
   Future<List<Module>> modules(String subjectId);
 
+  /// One item by id, or null if it doesn't exist.
+  Future<University?> university(String id);
+  Future<Semester?> semester(String id);
+  Future<Subject?> subject(String id);
+
   /// Creates (empty id) or updates. Returns the document id.
   Future<String> saveUniversity(University university);
   Future<String> saveSemester(Semester semester);
@@ -102,6 +107,37 @@ class FirestoreCatalogRepository implements CatalogRepository {
         .get();
     return _map(snap, (j, id) => Module.fromJson(j).copyWith(id: id));
   }
+
+  Future<T?> _get<T>(
+    String collection,
+    String id,
+    T Function(Map<String, dynamic> json, String id) fromJson,
+  ) async {
+    final snap = await _col(collection).doc(id).get();
+    final data = snap.data();
+    return data == null ? null : fromJson(data, snap.id);
+  }
+
+  @override
+  Future<University?> university(String id) => _get(
+    FirestoreCollections.universities,
+    id,
+    (j, id) => University.fromJson(j).copyWith(id: id),
+  );
+
+  @override
+  Future<Semester?> semester(String id) => _get(
+    FirestoreCollections.semesters,
+    id,
+    (j, id) => Semester.fromJson(j).copyWith(id: id),
+  );
+
+  @override
+  Future<Subject?> subject(String id) => _get(
+    FirestoreCollections.subjects,
+    id,
+    (j, id) => Subject.fromJson(j).copyWith(id: id),
+  );
 
   Future<String> _save(
     String collection,

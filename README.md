@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 2 done — design system, admin panel: catalog + notes with PDF upload |
+| Status | Phase 3 done — Home, browsing, note details + free preview, search, recently viewed |
 
 ---
 

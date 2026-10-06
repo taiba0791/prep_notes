@@ -7,12 +7,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:prepnotes/app.dart';
 import 'package:prepnotes/core/constants/app_strings.dart';
 import 'package:prepnotes/core/constants/firestore_paths.dart';
+import 'package:prepnotes/core/providers/firebase_providers.dart';
 import 'package:prepnotes/core/router/app_router.dart';
 import 'package:prepnotes/core/router/route_paths.dart';
-import 'package:prepnotes/data/repositories/user_repository.dart';
 import 'package:prepnotes/features/auth/data/auth_repository.dart';
 import 'package:prepnotes/features/auth/domain/auth_session.dart';
 import 'package:prepnotes/features/auth/presentation/login_screen.dart';
+import 'package:prepnotes/features/home/presentation/home_screen.dart';
+import 'package:prepnotes/features/notes/presentation/browse_screens.dart';
 
 import '../fakes/fake_auth_repository.dart';
 
@@ -32,9 +34,9 @@ void main() {
     container = ProviderContainer(
       overrides: [
         authRepositoryProvider.overrideWithValue(auth),
-        userRepositoryProvider.overrideWithValue(
-          FirestoreUserRepository(db = FakeFirebaseFirestore()),
-        ),
+        // Every Firestore repository (users, catalog, notes, library) uses
+        // this in-memory database.
+        firestoreProvider.overrideWithValue(db = FakeFirebaseFirestore()),
       ],
     );
     addTearDown(container.dispose);
@@ -59,7 +61,7 @@ void main() {
   testWidgets('starts on Home', (tester) async {
     await pumpApp(tester);
     expect(location(), RoutePaths.home);
-    expect(pageTitle(AppStrings.navHome), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
   });
 
   testWidgets('tapping a tab changes the URL', (tester) async {
@@ -75,9 +77,14 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester);
+    await db.doc(FirestorePaths.university('mumbai-univ')).set({
+      UniversityFields.name: 'University of Mumbai',
+      UniversityFields.isActive: true,
+      UniversityFields.order: 1,
+    });
     await go(tester, RoutePaths.university('mumbai-univ'));
-    expect(pageTitle(AppStrings.pageUniversity), findsOneWidget);
-    expect(find.text('universityId: mumbai-univ'), findsOneWidget);
+    expect(find.byType(UniversityScreen), findsOneWidget);
+    expect(find.text('University of Mumbai'), findsWidgets);
   });
 
   testWidgets('unknown URL shows the 404 page', (tester) async {

@@ -174,9 +174,10 @@ class _TopNav extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         onTap: () => onDestinationSelected(AppBranch.home),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: AppLogo(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          // Tablets: just the mark, so the buttons always fit.
+          child: AppLogo(showName: context.isDesktop),
         ),
       ),
     );
@@ -194,6 +195,11 @@ class _TopNav extends ConsumerWidget {
     final actions = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        IconButton(
+          tooltip: AppStrings.searchTitle,
+          icon: const Icon(Icons.search),
+          onPressed: () => onNavigate(RoutePaths.search),
+        ),
         const ThemeModeButton(),
         const SizedBox(width: 8),
         if (signedIn)

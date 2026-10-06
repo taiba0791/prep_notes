@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -39,15 +41,24 @@ abstract interface class BrowseRepository {
   /// URL of the free-preview PDF (first N pages), or null if none.
   Future<String?> previewUrl(String noteId);
 
+  /// The free-preview PDF itself (phones show it in-app). Max 20 MB.
+  Future<Uint8List?> previewBytes(String noteId);
+
   /// Counted on the server (cheap aggregate queries, no documents read).
   Future<CatalogCounts> counts();
 }
 
 class FirestoreBrowseRepository implements BrowseRepository {
-  FirestoreBrowseRepository(this._db, this._storage);
+  /// Storage is only needed for previews, so it's looked up lazily.
+  FirestoreBrowseRepository(
+    this._db, {
+    required FirebaseStorage Function() storage,
+  }) : _storageOf = storage;
 
   final FirebaseFirestore _db;
-  final FirebaseStorage _storage;
+  final FirebaseStorage Function() _storageOf;
+
+  FirebaseStorage get _storage => _storageOf();
 
   Query<Map<String, dynamic>> get _published => _db
       .collection(FirestoreCollections.notes)
@@ -191,6 +202,18 @@ class FirestoreBrowseRepository implements BrowseRepository {
   }
 
   @override
+  Future<Uint8List?> previewBytes(String noteId) async {
+    try {
+      return await _storage
+          .ref(StoragePaths.notePreview(noteId))
+          .getData(20 * 1024 * 1024);
+    } on FirebaseException catch (e) {
+      if (e.code == 'object-not-found') return null;
+      rethrow;
+    }
+  }
+
+  @override
   Future<CatalogCounts> counts() async {
     final results = await Future.wait([
       _published.count().get(),
@@ -216,5 +239,5 @@ class FirestoreBrowseRepository implements BrowseRepository {
 @Riverpod(keepAlive: true)
 BrowseRepository browseRepository(Ref ref) => FirestoreBrowseRepository(
   ref.watch(firestoreProvider),
-  ref.watch(firebaseStorageProvider),
+  storage: () => ref.read(firebaseStorageProvider),
 );

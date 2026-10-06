@@ -12,6 +12,10 @@ import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/notes/presentation/browse_screens.dart';
+import '../../features/notes/presentation/note_details_screen.dart';
+import '../../features/notes/presentation/preview_and_search_screens.dart';
 import '../../features/profile/presentation/change_password_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -70,8 +74,17 @@ GoRouter appRouter(Ref ref) {
           // 0 · Home (+ search and footer pages)
           StatefulShellBranch(
             routes: [
-              _page(RoutePaths.home, AppStrings.navHome),
-              _page(RoutePaths.search, AppStrings.pageSearch),
+              GoRoute(
+                path: RoutePaths.home,
+                builder: (context, state) => const HomeScreen(),
+              ),
+              GoRoute(
+                path: RoutePaths.search,
+                builder: (context, state) => SearchScreen(
+                  initialQuery:
+                      state.uri.queryParameters[RoutePaths.queryParam] ?? '',
+                ),
+              ),
               _page(RoutePaths.about, AppStrings.pageAbout),
               _page(RoutePaths.contact, AppStrings.pageContact),
               _page(RoutePaths.privacy, AppStrings.pagePrivacy),
@@ -84,17 +97,41 @@ GoRouter appRouter(Ref ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.notes,
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: AppStrings.navNotes),
+                builder: (context, state) => const NotesHomeScreen(),
                 routes: [
-                  _page('u/:universityId', AppStrings.pageUniversity),
-                  _page('s/:semesterId', AppStrings.pageSemester),
-                  _page('sub/:subjectId', AppStrings.pageSubject),
-                  _page(
-                    ':noteId',
-                    AppStrings.pageNoteDetails,
+                  GoRoute(
+                    path: 'u/:universityId',
+                    builder: (context, state) => UniversityScreen(
+                      universityId: state.pathParameters['universityId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 's/:semesterId',
+                    builder: (context, state) => SemesterScreen(
+                      semesterId: state.pathParameters['semesterId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'sub/:subjectId',
+                    builder: (context, state) => SubjectScreen(
+                      subjectId: state.pathParameters['subjectId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':noteId',
+                    builder: (context, state) => NoteDetailsScreen(
+                      noteId: state.pathParameters['noteId']!,
+                    ),
                     routes: [
-                      // Full-screen PDF viewer (hides the navigation).
+                      // Free preview pages (public, full screen).
+                      GoRoute(
+                        path: 'preview',
+                        parentNavigatorKey: _rootNavigatorKey,
+                        builder: (context, state) => NotePreviewScreen(
+                          noteId: state.pathParameters['noteId']!,
+                        ),
+                      ),
+                      // Full purchased PDF (Phase 4).
                       _page(
                         'view',
                         AppStrings.pageNoteViewer,
