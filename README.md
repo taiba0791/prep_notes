@@ -11,7 +11,7 @@ Panel — one Flutter codebase for **Web, Android and iOS**, backed by **Firebas
 |---|---|
 | Firebase project | `prepnotes-635d6` (region `asia-south1`, Mumbai) |
 | App ID (Android / iOS) | `com.prepnotes.prepnotes` |
-| Status | Phase 4 done — Razorpay checkout (website), My Purchases, secure PDF viewer. Legal pages live. |
+| Status | Phase 5 done — admin dashboard (live stats + 30-day revenue), users (search, disable, admin), orders (filters, refunds, CSV). |
 | Legal text | `lib/features/legal/domain/legal_content.dart` — a template; set `LegalInfo.operatorName` to your KYC name |
 
 ---
@@ -176,8 +176,8 @@ npm --prefix functions run bootstrap-admin -- you@example.com
 Add `--remove` to take admin away. The app picks up the change on its next
 start (it refreshes the token once per launch) or right after re-login.
 
-**More admins:** an existing admin calls the `setAdminClaim` Cloud Function
-(Admin → Users screen, Phase 5). Admins can't remove their own access.
+**More admins:** Admin → Users → open the person → *Make admin* (calls the
+`setAdminClaim` function). Admins can't remove their own access.
 
 ---
 
@@ -233,6 +233,20 @@ the output. Razorpay Dashboard (Test Mode) → Account & Settings → **Webhooks
 Use Razorpay's test details (Razorpay docs → *Test card / UPI details*), e.g.
 UPI ID `success@razorpay` (succeeds) or `failure@razorpay` (fails). Test-mode
 money is not real.
+
+### Refunds
+
+Refunds are **recorded** in the app, not sent from it:
+1. Razorpay Dashboard → Transactions → Payments → the payment → **Issue refund**.
+2. PrepNotes Admin → Orders → the order → **Mark as refunded** (optional reason).
+   The student loses access to that note and the dashboard numbers go down.
+
+### Dashboard numbers
+
+`stats/global` and `stats_daily/{day}` are kept up to date by Cloud Functions
+(new students, published notes, payments, refunds). Admin → Dashboard →
+**Recalculate stats** rebuilds them from the real data (run it once after the
+first deploy of Phase 5 — it also fills in the search name for old accounts).
 
 ### Going live (after the website is approved)
 

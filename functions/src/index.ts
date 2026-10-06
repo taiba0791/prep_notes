@@ -22,6 +22,10 @@ export { getNoteFileUrl } from "./payments/note_file_url";
 export { razorpayWebhook } from "./payments/webhook";
 export { verifyPayment } from "./payments/verify_payment";
 export { setAdminClaim } from "./admin/set_admin_claim";
+export { setUserDisabled } from "./admin/set_user_disabled";
+export { markOrderRefunded } from "./payments/refund_order";
+export { recomputeStats } from "./stats/recompute_stats";
+export { onNoteStatsWritten } from "./stats/stats_triggers";
 
 /**
  * Health check: proves the Functions pipeline works.

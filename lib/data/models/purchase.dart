@@ -62,6 +62,8 @@ abstract class PurchaseOrder with _$PurchaseOrder {
     @TimestampConverter() DateTime? createdAt,
     @TimestampConverter() DateTime? paidAt,
     String? failureReason,
+    @TimestampConverter() DateTime? refundedAt,
+    String? refundReason,
   }) = _PurchaseOrder;
 
   factory PurchaseOrder.fromJson(Map<String, dynamic> json) =>

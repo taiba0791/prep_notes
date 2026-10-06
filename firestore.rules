@@ -113,7 +113,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // stats, fileAccessLogs, rateLimits: server-only (no match = denied).
+    // ───────────────────────── stats ─────────────────────────
+    // Dashboard counters, maintained by Cloud Functions; admins read them.
+
+    match /stats/{statId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /stats_daily/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // fileAccessLogs, rateLimits: server-only (no match = denied).
 
     // ───────────────────────── catalog ─────────────────────────
     // University → Semester → Subject → Module: anyone can read (it's the

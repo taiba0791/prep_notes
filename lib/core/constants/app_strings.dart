@@ -263,8 +263,6 @@ abstract final class AppStrings {
   static const adminOrders = 'Orders';
   static const adminResources = 'Resources';
   static const adminStudentVoice = 'Student Voice';
-  static const adminDashboardSoon =
-      'Live numbers and charts arrive in Phase 5.';
   static const adminStatStudents = 'Students';
   static const adminStatNotes = 'Notes';
   static const adminStatPurchases = 'Purchases';
@@ -488,4 +486,85 @@ abstract final class AppStrings {
       'come back here for a fresh one.';
   static String viewerPage(int page, int total) => 'Page $page of $total';
   static String watermark(String email) => 'PrepNotes · $email';
+
+  // ── Admin: dashboard, users, orders (Phase 5) ─────────────
+  static const adminDashboardSubtitle =
+      'Live numbers, kept up to date by the server.';
+  static const recalculateStats = 'Recalculate stats';
+  static const statsRecalculated = 'Stats recalculated.';
+  static const revenueLast30 = 'Revenue · last 30 days';
+  static const topNotes = 'Most purchased notes';
+  static const recentPurchases = 'Recent purchases';
+  static const recentFeedback = 'Recent feedback & requests';
+  static const feedbackComingSoon =
+      'Student Voice arrives in Phase 7 — feedback and note requests will '
+      'show up here.';
+  static const noSalesYet = 'No sales yet.';
+  static String soldCount(int n) => '$n sold';
+
+  static const searchUsersHint = 'Search by email or name';
+  static const noUsersFound = 'No users found.';
+  static const userColumnName = 'Name';
+  static const userColumnEmail = 'Email';
+  static const userColumnJoined = 'Joined';
+  static const userColumnStatus = 'Status';
+  static const userActive = 'Active';
+  static const userDisabled = 'Disabled';
+  static const roleAdmin = 'Admin';
+  static const roleStudent = 'Student';
+  static const userNotFound = 'User not found.';
+  static const userPurchases = 'Purchased notes';
+  static const userOrders = 'Orders';
+  static const userStudyTime = 'Study time';
+  static const disableAccount = 'Disable account';
+  static const enableAccount = 'Enable account';
+  static const disableConfirmTitle = 'Disable this account?';
+  static const disableConfirmMessage =
+      "They won't be able to log in until you enable the account again. "
+      'Their purchases are kept.';
+  static const accountDisabled = 'Account disabled.';
+  static const accountEnabled = 'Account enabled.';
+  static const makeAdmin = 'Make admin';
+  static const removeAdmin = 'Remove admin';
+  static const makeAdminConfirm =
+      'Admins can edit the catalog, see all users and orders, and record '
+      'refunds. Continue?';
+  static const removeAdminConfirm = 'Remove admin access from this user?';
+  static const adminUpdated = 'Admin access updated.';
+  static const nothingYet = 'Nothing yet.';
+  static const loadFailed = "Couldn't load this. Pull to refresh.";
+  static String joinedOn(String date) => 'Joined $date';
+  static String lastLogin(String date) => 'Last login $date';
+
+  static const allStatuses = 'All statuses';
+  static const fromDate = 'From';
+  static const toDate = 'To';
+  static const anyDate = 'Any date';
+  static const clearFilters = 'Clear';
+  static const exportCsv = 'Export CSV';
+  static const exportWebOnly = 'Export works on the website.';
+  static String exported(int n) => 'Exported $n orders.';
+  static const noOrdersMatch = 'No orders match these filters.';
+  static const orderColumnDate = 'Date';
+  static const orderColumnNotes = 'Notes';
+  static const orderColumnAmount = 'Amount';
+  static const orderColumnStatus = 'Status';
+  static const orderNotFound = 'Order not found.';
+  static const orderStudent = 'Student';
+  static const orderPaymentId = 'Razorpay payment ID';
+  static const orderRazorpayOrderId = 'Razorpay order ID';
+  static const orderCreated = 'Created';
+  static const orderPaid = 'Paid';
+  static const orderRefunded = 'Refunded';
+  static const orderFailureReason = 'Failure reason';
+  static const orderRefundReason = 'Refund reason';
+  static const markRefunded = 'Mark as refunded';
+  static const refundDialogTitle = 'Record a refund';
+  static const refundDialogMessage =
+      'This does NOT send money. First refund the payment in the Razorpay '
+      'Dashboard (Transactions → Payments → this payment → Issue refund). '
+      'Then record it here: the student loses access to these notes and the '
+      'revenue numbers go down.';
+  static const refundReasonLabel = 'Reason (optional)';
+  static const refundRecorded = 'Refund recorded.';
 }

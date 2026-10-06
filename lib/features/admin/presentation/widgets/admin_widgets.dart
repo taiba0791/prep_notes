@@ -5,6 +5,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/firestore_paths.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../data/repositories/admin_repository.dart';
 import '../../../../data/repositories/catalog_repository.dart';
 
 /// Header + optional filters + body, used by every admin list page.
@@ -212,12 +213,69 @@ Future<bool> confirmDelete(BuildContext context, String what) async {
   return ok ?? false;
 }
 
+/// A yes/no dialog. Returns true if confirmed.
+Future<bool> confirmAction(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String confirm,
+  bool destructive = false,
+}) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      final scheme = Theme.of(context).colorScheme;
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(AppStrings.cancel),
+          ),
+          FilledButton(
+            style: destructive
+                ? FilledButton.styleFrom(
+                    backgroundColor: scheme.error,
+                    foregroundColor: scheme.onError,
+                  )
+                : null,
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(confirm),
+          ),
+        ],
+      );
+    },
+  );
+  return ok ?? false;
+}
+
+/// "Load more" under a paginated admin list (nothing when at the end).
+Widget? loadMoreButton({
+  required bool hasMore,
+  required bool loading,
+  required VoidCallback onPressed,
+}) => !hasMore
+    ? null
+    : Center(
+        child: loading
+            ? const Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(),
+              )
+            : OutlinedButton(
+                onPressed: onPressed,
+                child: const Text(AppStrings.loadMore),
+              ),
+      );
+
 void showSnack(BuildContext context, String message) =>
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
 
 /// Friendly text for errors from catalog writes.
 String catalogErrorMessage(Object error) => switch (error) {
+  AdminActionException(:final message) => message,
   CatalogInUseException(:final childCollection) => AppStrings.inUse(
     switch (childCollection) {
       FirestoreCollections.semesters => 'semesters',

@@ -22,6 +22,7 @@ abstract final class FirestoreCollections {
   static const resources = 'resources';
   static const feedback = 'feedback';
   static const stats = 'stats';
+  static const statsDaily = 'stats_daily';
 
   // Sub-collections of users/{uid}
   static const entitlements = 'entitlements';
@@ -61,6 +62,10 @@ abstract final class FirestorePaths {
 
   /// Aggregate counters, maintained by Cloud Functions.
   static const statsGlobal = '${FirestoreCollections.stats}/global';
+
+  /// One day's sales, id "yyyy-MM-dd" (India time). Admin read only.
+  static String statsDay(String day) =>
+      '${FirestoreCollections.statsDaily}/$day';
 }
 
 // ─────────────────────────── Common fields ────────────────────────────
@@ -90,6 +95,10 @@ abstract final class UserFields {
   static const totalStudyMinutes = 'totalStudyMinutes';
   static const createdAt = CommonFields.createdAt;
   static const lastLoginAt = 'lastLoginAt';
+
+  // Written ONLY by Cloud Functions (never part of the app's profile writes).
+  static const nameLower = 'nameLower'; // admin search
+  static const disabled = 'disabled'; // mirror of the Auth "disabled" flag
 }
 
 /// users/{uid}/entitlements/{noteId} — written ONLY by Cloud Functions.
@@ -217,6 +226,9 @@ abstract final class OrderFields {
   static const createdAt = CommonFields.createdAt;
   static const paidAt = 'paidAt';
   static const failureReason = 'failureReason';
+  static const refundedAt = 'refundedAt';
+  static const refundedBy = 'refundedBy';
+  static const refundReason = 'refundReason';
 }
 
 /// resourceCategories/{categoryId}
@@ -262,6 +274,14 @@ abstract final class StatsFields {
   static const totalNotes = 'totalNotes';
   static const totalPurchases = 'totalPurchases';
   static const totalRevenue = 'totalRevenue'; // paise
+}
+
+/// stats_daily/{yyyy-MM-dd} — maintained by Cloud Functions.
+abstract final class DailyStatsFields {
+  static const date = 'date';
+  static const purchases = 'purchases';
+  static const revenue = 'revenue'; // paise; refunds subtracted that day
+  static const refunds = 'refunds';
 }
 
 // ─────────────────────────── Stored values ────────────────────────────

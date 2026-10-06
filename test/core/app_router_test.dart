@@ -116,8 +116,9 @@ void main() {
     auth.emit(admin);
     await tester.pumpAndSettle();
     await go(tester, RoutePaths.adminOrder('o1'));
-    expect(pageTitle(AppStrings.pageAdminOrder), findsOneWidget);
-    expect(find.text('orderId: o1'), findsOneWidget);
+    expect(location(), RoutePaths.adminOrder('o1'));
+    // No such order in the fake database.
+    expect(find.text(AppStrings.orderNotFound), findsOneWidget);
   });
 
   testWidgets('signing out on a protected page goes to login', (tester) async {
