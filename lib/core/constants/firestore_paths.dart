@@ -98,6 +98,13 @@ abstract final class EntitlementFields {
   static const orderId = 'orderId';
   static const purchasedAt = 'purchasedAt';
   static const pricePaid = 'pricePaid'; // paise
+  // A small copy of the note, so "My Purchases" needs no extra reads.
+  static const title = 'title';
+  static const universityName = 'universityName';
+  static const semesterNumber = 'semesterNumber';
+  static const subjectName = 'subjectName';
+  static const thumbnailUrl = 'thumbnailUrl';
+  static const pageCount = 'pageCount';
 }
 
 /// users/{uid}/recentlyViewed/{noteId} — owner only, capped at 20.
@@ -201,6 +208,7 @@ abstract final class NoteFields {
 abstract final class OrderFields {
   static const userId = 'userId';
   static const noteIds = 'noteIds';
+  static const noteTitles = 'noteTitles';
   static const amount = 'amount'; // paise
   static const currency = 'currency';
   static const status = 'status'; // see OrderStatus

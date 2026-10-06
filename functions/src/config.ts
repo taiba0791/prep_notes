@@ -24,13 +24,57 @@ export const Collections = {
   users: "users",
   orders: "orders",
   notes: "notes",
+  entitlements: "entitlements",
+  stats: "stats",
+  fileAccessLogs: "fileAccessLogs",
+  rateLimits: "rateLimits",
 } as const;
+
+export const STATS_GLOBAL = "stats/global";
 
 export const OrderFields = {
   userId: "userId",
+  noteIds: "noteIds",
+  noteTitles: "noteTitles",
+  amount: "amount", // paise
+  currency: "currency",
+  status: "status",
+  razorpayOrderId: "razorpayOrderId",
+  razorpayPaymentId: "razorpayPaymentId",
+  createdAt: "createdAt",
+  paidAt: "paidAt",
+  failureReason: "failureReason",
   userDeleted: "userDeleted",
   userDeletedAt: "userDeletedAt",
 } as const;
+
+export const OrderStatus = {
+  created: "created",
+  paid: "paid",
+  failed: "failed",
+  refunded: "refunded",
+} as const;
+
+/** users/{uid}/entitlements/{noteId}: what was bought + a small copy of the note for "My Purchases". */
+export const EntitlementFields = {
+  noteId: "noteId",
+  orderId: "orderId",
+  purchasedAt: "purchasedAt",
+  pricePaid: "pricePaid", // paise
+  title: "title",
+  universityName: "universityName",
+  semesterNumber: "semesterNumber",
+  subjectName: "subjectName",
+  thumbnailUrl: "thumbnailUrl",
+  pageCount: "pageCount",
+} as const;
+
+export const StatsFields = {
+  totalPurchases: "totalPurchases",
+  totalRevenue: "totalRevenue", // paise
+} as const;
+
+export const CURRENCY_INR = "INR";
 
 /**
  * Region for Cloud STORAGE triggers. The default bucket lives in the "asia1"
@@ -52,6 +96,15 @@ export const StoragePaths = {
 } as const;
 
 export const NoteFields = {
+  title: "title",
+  price: "price", // paise
+  isFree: "isFree",
+  isPublished: "isPublished",
+  purchaseCount: "purchaseCount",
+  universityName: "universityName",
+  semesterNumber: "semesterNumber",
+  subjectName: "subjectName",
+  thumbnailUrl: "thumbnailUrl",
   pageCount: "pageCount",
   fileSizeBytes: "fileSizeBytes",
   previewPages: "previewPages",

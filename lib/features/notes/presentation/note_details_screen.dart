@@ -16,6 +16,8 @@ import '../../../data/models/note.dart';
 import '../../../data/models/recently_viewed.dart';
 import '../../../data/repositories/library_repository.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../purchases/data/payment_service.dart';
+import '../../purchases/presentation/checkout_screen.dart';
 import 'browse_providers.dart';
 
 /// Opens the free preview: a new browser tab on web, the in-app viewer on
@@ -291,9 +293,8 @@ class _BuyCard extends ConsumerWidget {
       if (note.semesterNumber > 0) 'Sem ${note.semesterNumber}',
     ].join(' · ');
 
-    void soon(String message) =>
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(message)));
+    final buyInApp = ref.watch(buyInAppProvider);
+    void read() => context.push(RoutePaths.noteViewer(note.id));
 
     return Card(
       child: Padding(
@@ -324,20 +325,21 @@ class _BuyCard extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               FilledButton(
-                onPressed: () => soon(AppStrings.viewerComingSoon),
-                child: const Text(AppStrings.viewNotes),
+                onPressed: read,
+                child: const Text(AppStrings.readNow),
               ),
-            ] else
+            ] else if (note.isFree)
               FilledButton(
-                onPressed: () => soon(
-                  note.isFree
-                      ? AppStrings.viewerComingSoon
-                      : AppStrings.checkoutComingSoon,
-                ),
-                child: Text(
-                  note.isFree ? AppStrings.getFree : AppStrings.buyNow,
-                ),
-              ),
+                onPressed: read,
+                child: const Text(AppStrings.readFree),
+              )
+            else if (buyInApp)
+              FilledButton(
+                onPressed: () => context.push(RoutePaths.checkout(note.id)),
+                child: const Text(AppStrings.buyNow),
+              )
+            else
+              BuyOnWebsiteButton(noteId: note.id),
             if (note.hasPreview) ...[
               const SizedBox(height: 10),
               OutlinedButton(

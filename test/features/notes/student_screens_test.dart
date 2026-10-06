@@ -18,6 +18,7 @@ import 'package:prepnotes/features/home/presentation/home_screen.dart';
 import 'package:prepnotes/features/notes/presentation/browse_screens.dart';
 import 'package:prepnotes/features/notes/presentation/note_details_screen.dart';
 import 'package:prepnotes/features/notes/presentation/preview_and_search_screens.dart';
+import 'package:prepnotes/features/purchases/data/payment_service.dart';
 
 import '../../fakes/fake_auth_repository.dart';
 
@@ -90,6 +91,7 @@ void main() {
     String start, {
     double width = 1400,
     AuthSession session = AuthSession.guest,
+    bool buyInApp = true,
   }) async {
     tester.view.physicalSize = Size(width, 2400);
     tester.view.devicePixelRatio = 1;
@@ -128,6 +130,10 @@ void main() {
           RoutePaths.resources,
         ])
           GoRoute(path: p, builder: (_, _) => const SizedBox()),
+        GoRoute(
+          path: '/checkout/:id',
+          builder: (_, s) => Text('checkout:${s.pathParameters['id']}'),
+        ),
       ],
     );
     await tester.pumpWidget(
@@ -135,6 +141,7 @@ void main() {
         overrides: [
           firestoreProvider.overrideWithValue(db),
           authRepositoryProvider.overrideWithValue(auth),
+          buyInAppProvider.overrideWithValue(buyInApp),
         ],
         child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
       ),
@@ -197,9 +204,23 @@ void main() {
       expect(find.text(AppStrings.readPreview), findsOneWidget);
       expect(find.text(AppStrings.buyToUnlock), findsNWidgets(3));
 
+      expect(find.text(AppStrings.buyOnWebsite), findsNothing);
+
       await tester.tap(find.text(AppStrings.buyNow));
-      await tester.pump();
-      expect(find.text(AppStrings.checkoutComingSoon), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('checkout:n1'), findsOneWidget);
+    });
+
+    testWidgets('phone app: "Buy on website" instead of Buy now', (
+      tester,
+    ) async {
+      await seedCatalog();
+      await addNote('n1');
+      await pump(tester, RoutePaths.note('n1'), width: 400, buyInApp: false);
+      expect(find.text(AppStrings.buyNow), findsNothing);
+      expect(find.text(AppStrings.buyOnWebsite), findsOneWidget);
+      expect(find.text(AppStrings.buyOnWebsiteHint), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('free note: "Get it free", no preview → message', (
@@ -208,7 +229,7 @@ void main() {
       await seedCatalog();
       await addNote('f1', price: 0, hasPreview: false);
       await pump(tester, RoutePaths.note('f1'));
-      expect(find.text(AppStrings.getFree), findsOneWidget);
+      expect(find.text(AppStrings.readFree), findsOneWidget);
       expect(find.text(AppStrings.free), findsWidgets);
       expect(find.text(AppStrings.noPreview), findsOneWidget);
       expect(find.text(AppStrings.readPreview), findsNothing);
@@ -226,7 +247,7 @@ void main() {
         session: const AuthSession(uid: 'u1'),
       );
       expect(find.text(AppStrings.youOwnThis), findsOneWidget);
-      expect(find.text(AppStrings.viewNotes), findsOneWidget);
+      expect(find.text(AppStrings.readNow), findsOneWidget);
       expect(find.text(AppStrings.buyNow), findsNothing);
     });
 

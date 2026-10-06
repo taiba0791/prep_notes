@@ -21,6 +21,9 @@ import '../../features/notes/presentation/preview_and_search_screens.dart';
 import '../../features/profile/presentation/change_password_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/purchases/presentation/checkout_screen.dart';
+import '../../features/purchases/presentation/my_purchases_screen.dart';
+import '../../features/purchases/presentation/note_viewer_screen.dart';
 import '../constants/app_strings.dart';
 import '../widgets/app_scaffold.dart';
 import '../widgets/not_found_screen.dart';
@@ -138,10 +141,13 @@ GoRouter appRouter(Ref ref) {
                         ),
                       ),
                       // Full purchased PDF (Phase 4).
-                      _page(
-                        'view',
-                        AppStrings.pageNoteViewer,
+                      // Full PDF (owners, free notes, admins; server checks).
+                      GoRoute(
+                        path: 'view',
                         parentNavigatorKey: _rootNavigatorKey,
+                        builder: (context, state) => NoteViewerScreen(
+                          noteId: state.pathParameters['noteId']!,
+                        ),
                       ),
                     ],
                   ),
@@ -177,7 +183,10 @@ GoRouter appRouter(Ref ref) {
                   ),
                 ],
               ),
-              _page(RoutePaths.purchases, AppStrings.pagePurchases),
+              GoRoute(
+                path: RoutePaths.purchases,
+                builder: (context, state) => const MyPurchasesScreen(),
+              ),
             ],
           ),
         ],
@@ -198,7 +207,12 @@ GoRouter appRouter(Ref ref) {
       ),
 
       // Checkout (full screen)
-      _page('/checkout/:noteId', AppStrings.pageCheckout),
+      // Checkout (website; signed-in only — see route_guards).
+      GoRoute(
+        path: '/checkout/:noteId',
+        builder: (context, state) =>
+            CheckoutScreen(noteId: state.pathParameters['noteId']!),
+      ),
 
       // Admin panel: its own shell (dark side menu), guarded by adminGuard.
       ShellRoute(

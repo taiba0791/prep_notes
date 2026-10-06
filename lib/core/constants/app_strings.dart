@@ -221,12 +221,8 @@ abstract final class AppStrings {
   static const freePreview = 'Free preview';
   static const buyToUnlock = 'Buy to unlock';
   static const buyNow = 'Buy now';
-  static const getFree = 'Get it free';
   static const readPreview = 'Read free preview';
-  static const viewNotes = 'View notes';
   static const youOwnThis = 'You own these notes';
-  static const checkoutComingSoon = 'Checkout arrives soon (Phase 4).';
-  static const viewerComingSoon = 'The notes viewer arrives soon (Phase 4).';
   static const noPreview = 'No free preview for these notes.';
   static String moreFrom(String what) => what;
   static const moreFromStart = 'More from ';
@@ -430,4 +426,66 @@ abstract final class AppStrings {
       "If an account exists for that email, we've sent a link to reset your "
       'password. It may take a minute — check your spam folder too.';
   static const backToLogin = 'Back to log in';
+
+  // ── Payments, My Purchases, viewer (Phase 4) ──────────────
+  static const buyOnWebsite = 'Buy on website';
+  static const buyOnWebsiteHint =
+      'Purchases are made on the PrepNotes website. Your notes then open '
+      'here in the app with the same account.';
+  static const readNow = 'Read now';
+  static const readFree = 'Read free';
+  static String payAmount(String price) => 'Pay $price';
+  static const securePayment =
+      'Secure payment by Razorpay · UPI, cards, netbanking';
+  static const checkoutTitle = 'Checkout';
+  static const checkoutTotal = 'Total';
+  static const checkoutTerms =
+      'By paying you agree to our Terms and Refund Policy. Notes are digital '
+      'and unlock instantly.';
+  static const checkoutCreating = 'Preparing your order…';
+  static const checkoutPaying = 'Complete the payment in the Razorpay window.';
+  static const checkoutVerifying = 'Confirming your payment…';
+  static const paymentSuccessTitle = 'Payment successful';
+  static const paymentSuccessMessage =
+      'The notes are now yours — on the website and in the app.';
+  static const paymentFailedTitle = 'Payment not completed';
+  static const paymentCancelled =
+      'You closed the payment window. No money was taken.';
+  static const goToPurchases = 'Go to My Purchases';
+  static const payErrSignIn = 'Please log in again to continue.';
+  static const payErrAlreadyOwned = 'You already own these notes.';
+  static const payErrNotAvailable = "These notes aren't available right now.";
+  static const payErrNotPurchased = 'Buy these notes to read the full PDF.';
+  static const payErrNotVerified =
+      "We couldn't confirm this payment. If money was taken, it is confirmed "
+      'automatically within a few minutes — check My Purchases, or contact us.';
+  static const payErrTooMany = 'Too many attempts. Please wait a few minutes.';
+  static const payErrBusy = 'The payment service is busy. Please try again.';
+  static const payErrNetwork = 'No internet connection. Please try again.';
+  static const payErrUnknown = 'Something went wrong. Please try again.';
+  static const paymentsWebOnly = 'Payments work on the website.';
+
+  static const purchasesNotesTab = 'My notes';
+  static const purchasesOrdersTab = 'Orders';
+  static const searchPurchases = 'Search my notes';
+  static const noPurchasesTitle = 'No notes yet';
+  static const noPurchasesMessage =
+      'Notes you buy or unlock show up here, on every device.';
+  static const noOrdersTitle = 'No orders yet';
+  static const noOrdersMessage = 'Your payments will be listed here.';
+  static const noMatches = 'No notes match your search.';
+  static String orderIdLabel(String id) => 'Order $id';
+  static const orderStatusPaid = 'Paid';
+  static const orderStatusFailed = 'Failed';
+  static const orderStatusCreated = 'Not completed';
+  static const orderStatusRefunded = 'Refunded';
+  static String purchasedOn(String date) => 'Bought $date';
+
+  static const viewerOpening = 'Opening your notes…';
+  static const viewerOpenPdf = 'Open PDF';
+  static const viewerWebHint =
+      'Your notes open in a new browser tab. The link works for 10 minutes — '
+      'come back here for a fresh one.';
+  static String viewerPage(int page, int total) => 'Page $page of $total';
+  static String watermark(String email) => 'PrepNotes · $email';
 }
