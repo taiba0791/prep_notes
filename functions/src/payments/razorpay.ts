@@ -56,6 +56,81 @@ export const createRazorpayOrder: CreateRazorpayOrder = async (
   return { id: body.id };
 };
 
+/** Calls the Razorpay REST API (https://api.razorpay.com/v1/...). */
+async function razorpayRequest<T>(
+  method: "GET" | "POST",
+  path: string,
+  keys: RazorpayKeys,
+  body?: unknown,
+): Promise<T> {
+  const auth = Buffer.from(`${keys.keyId}:${keys.keySecret}`).toString("base64");
+  const res = await fetch(`https://api.razorpay.com/v1/${path}`, {
+    method,
+    headers: {
+      "Authorization": `Basic ${auth}`,
+      "Content-Type": "application/json",
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`Razorpay ${path} failed (${res.status}): ${await res.text()}`);
+  }
+  return (await res.json()) as T;
+}
+
+/** The Razorpay calls used by Resource Room subscriptions (fakeable in tests). */
+export interface SubscriptionApi {
+  createPlan(
+    plan: { months: number; amount: number; name: string },
+    keys: RazorpayKeys,
+  ): Promise<{ id: string }>;
+  createSubscription(
+    sub: { planId: string; totalCount: number; notes: Record<string, string> },
+    keys: RazorpayKeys,
+  ): Promise<{ id: string }>;
+  cancelSubscription(
+    id: string,
+    atCycleEnd: boolean,
+    keys: RazorpayKeys,
+  ): Promise<void>;
+}
+
+export const razorpaySubscriptionApi: SubscriptionApi = {
+  createPlan: ({ months, amount, name }, keys) =>
+    razorpayRequest("POST", "plans", keys, {
+      period: "monthly",
+      interval: months,
+      item: { name, amount, currency: "INR" },
+    }),
+  createSubscription: ({ planId, totalCount, notes }, keys) =>
+    razorpayRequest("POST", "subscriptions", keys, {
+      plan_id: planId,
+      total_count: totalCount,
+      quantity: 1,
+      customer_notify: 1,
+      notes,
+    }),
+  cancelSubscription: async (id, atCycleEnd, keys) => {
+    await razorpayRequest("POST", `subscriptions/${id}/cancel`, keys, {
+      cancel_at_cycle_end: atCycleEnd ? 1 : 0,
+    });
+  },
+};
+
+/**
+ * Subscription checkout signature: HMAC_SHA256(payment_id + "|" +
+ * subscription_id, key_secret) — note the order is the reverse of orders.
+ */
+export function isValidSubscriptionSignature(
+  subscriptionId: string,
+  paymentId: string,
+  signature: string,
+  keySecret: string,
+): boolean {
+  if (!subscriptionId || !paymentId || !signature || !keySecret) return false;
+  return sameHex(hmacHex(keySecret, `${paymentId}|${subscriptionId}`), signature);
+}
+
 function hmacHex(secret: string, payload: string | Buffer): string {
   return createHmac("sha256", secret).update(payload).digest("hex");
 }

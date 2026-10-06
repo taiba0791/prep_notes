@@ -28,7 +28,34 @@ class RazorpayWebPaymentService implements PaymentService {
     required String name,
     required String description,
     required String themeColor,
-  }) {
+  }) => _open({
+    'key': order.keyId,
+    'amount': order.amount,
+    'currency': order.currency,
+    'order_id': order.orderId,
+    'name': name,
+    'description': description,
+    'prefill': {'email': order.email},
+    'theme': {'color': themeColor},
+  });
+
+  @override
+  Future<PaymentOutcome> subscribe(
+    CheckoutSubscription subscription, {
+    required String name,
+    required String description,
+    required String themeColor,
+  }) => _open({
+    'key': subscription.keyId,
+    'subscription_id': subscription.subscriptionId,
+    'name': name,
+    'description': description,
+    'prefill': {'email': subscription.email},
+    'theme': {'color': themeColor},
+  });
+
+  /// Opens Razorpay Checkout and waits for success, failure or close.
+  Future<PaymentOutcome> _open(Map<String, Object?> settings) {
     final done = Completer<PaymentOutcome>();
     void finish(PaymentOutcome o) {
       if (!done.isCompleted) done.complete(o);
@@ -39,24 +66,13 @@ class RazorpayWebPaymentService implements PaymentService {
       return Future.value(const PaymentFailed('checkout-unavailable'));
     }
 
-    final options =
-        <String, Object?>{
-              'key': order.keyId,
-              'amount': order.amount,
-              'currency': order.currency,
-              'order_id': order.orderId,
-              'name': name,
-              'description': description,
-              'prefill': {'email': order.email},
-              'theme': {'color': themeColor},
-            }.jsify()!
-            as JSObject;
-
+    final options = settings.jsify()! as JSObject;
     options['handler'] = ((JSObject r) {
       String field(String k) => (r[k] as JSString?)?.toDart ?? '';
       finish(
         PaymentSucceeded(
           orderId: field('razorpay_order_id'),
+          subscriptionId: field('razorpay_subscription_id'),
           paymentId: field('razorpay_payment_id'),
           signature: field('razorpay_signature'),
         ),

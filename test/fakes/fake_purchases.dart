@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:prepnotes/data/models/access.dart';
 import 'package:prepnotes/data/models/purchase.dart';
 import 'package:prepnotes/data/repositories/purchases_repository.dart';
 import 'package:prepnotes/features/purchases/data/payment_service.dart';
@@ -11,6 +12,10 @@ class FakePurchasesRepository implements PurchasesRepository {
   final calls = <String>[];
   List<Purchase> owned = [];
   List<PurchaseOrder> orderList = [];
+  List<SemesterBundle> bundleList = [];
+  RoomAccess access = RoomAccess.closed;
+  RoomSubscription? subscription;
+  List<RoomPlan> plans = RoomPlan.defaults;
   PurchaseFailure? createFails;
   PurchaseFailure? verifyFails;
   PurchaseFailure? fileFails;
@@ -62,6 +67,62 @@ class FakePurchasesRepository implements PurchasesRepository {
 
   @override
   Future<Uint8List> download(String url) async => Uint8List(0);
+
+  @override
+  Future<CheckoutOrder> createBundleOrder(String semesterId) async {
+    calls.add('createBundle:$semesterId');
+    if (createFails != null) throw PurchaseException(createFails!);
+    return const CheckoutOrder(
+      orderId: 'order_b1',
+      amount: 89900,
+      currency: 'INR',
+      keyId: 'rzp_test_x',
+    );
+  }
+
+  @override
+  Future<List<SemesterBundle>> bundles(String uid) async => bundleList;
+
+  @override
+  Future<SemesterBundle?> bundle(String uid, String semesterId) async =>
+      bundleList.where((b) => b.semesterId == semesterId).firstOrNull;
+
+  @override
+  Future<RoomAccess> roomAccess(String uid) async => access;
+
+  @override
+  Future<RoomSubscription?> roomSubscription(String uid) async => subscription;
+
+  @override
+  Future<List<RoomPlan>> roomPlans() async => plans;
+
+  @override
+  Future<CheckoutSubscription> createRoomSubscription(String planKey) async {
+    calls.add('createSub:$planKey');
+    if (createFails != null) throw PurchaseException(createFails!);
+    return const CheckoutSubscription(
+      subscriptionId: 'sub_1',
+      amount: 14900,
+      currency: 'INR',
+      keyId: 'rzp_test_x',
+      months: 1,
+    );
+  }
+
+  @override
+  Future<void> verifyRoomSubscription({
+    required String subscriptionId,
+    required String paymentId,
+    required String signature,
+  }) async {
+    calls.add('verifySub:$subscriptionId:$paymentId:$signature');
+    if (verifyFails != null) throw PurchaseException(verifyFails!);
+  }
+
+  @override
+  Future<void> cancelRoomSubscription() async {
+    calls.add('cancelSub');
+  }
 }
 
 /// Payment window that answers with [outcome].
@@ -87,6 +148,24 @@ class FakePaymentService implements PaymentService {
         const PaymentSucceeded(
           orderId: 'order_1',
           paymentId: 'pay_1',
+          signature: 'sig',
+        );
+  }
+
+  final subscribed = <CheckoutSubscription>[];
+
+  @override
+  Future<PaymentOutcome> subscribe(
+    CheckoutSubscription subscription, {
+    required String name,
+    required String description,
+    required String themeColor,
+  }) async {
+    subscribed.add(subscription);
+    return outcome ??
+        const PaymentSucceeded(
+          subscriptionId: 'sub_1',
+          paymentId: 'pay_s1',
           signature: 'sig',
         );
   }

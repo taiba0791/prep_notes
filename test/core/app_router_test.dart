@@ -15,6 +15,7 @@ import 'package:prepnotes/features/auth/domain/auth_session.dart';
 import 'package:prepnotes/features/auth/presentation/login_screen.dart';
 import 'package:prepnotes/features/home/presentation/home_screen.dart';
 import 'package:prepnotes/features/notes/presentation/browse_screens.dart';
+import 'package:prepnotes/features/resources/presentation/resource_room_screen.dart';
 
 import '../fakes/fake_auth_repository.dart';
 
@@ -56,7 +57,6 @@ void main() {
   }
 
   String location() => router.state.uri.toString();
-  Finder pageTitle(String title) => find.widgetWithText(AppBar, title);
 
   testWidgets('starts on Home', (tester) async {
     await pumpApp(tester);
@@ -70,7 +70,7 @@ void main() {
     await tester.tap(find.text(AppStrings.navResourceRoom));
     await tester.pumpAndSettle();
     expect(location(), RoutePaths.resources);
-    expect(pageTitle(AppStrings.navResources), findsOneWidget);
+    expect(find.byType(ResourceRoomScreen), findsOneWidget);
   });
 
   testWidgets('deep link shows the page with its URL parameter', (

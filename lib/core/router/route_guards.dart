@@ -9,6 +9,8 @@ bool requiresSignIn(String path) {
   }
   if (path == RoutePaths.purchases) return true;
   if (path.startsWith('/checkout/')) return true;
+  // A saved Resource Room item belongs to a signed-in student.
+  if (path.startsWith('${RoutePaths.resources}/item/')) return true;
   // The PDF viewer (/notes/:noteId/view) needs a signed-in buyer.
   final segments = Uri.parse(path).pathSegments;
   return segments.length == 3 &&

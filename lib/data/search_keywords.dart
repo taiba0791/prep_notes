@@ -30,3 +30,10 @@ List<String> buildSearchKeywords(Iterable<String?> texts, {int max = 300}) {
   final list = keywords.toList()..sort();
   return list.length > max ? list.sublist(0, max) : list;
 }
+
+/// The words of a search box, in the same form as [buildSearchKeywords]
+/// (lower-case, max 20 letters), so `array-contains` can match them.
+List<String> searchTokens(String text) => [
+  for (final w in text.toLowerCase().split(RegExp(r'[^a-z0-9+#]+')))
+    if (w.isNotEmpty) w.length > 20 ? w.substring(0, 20) : w,
+];

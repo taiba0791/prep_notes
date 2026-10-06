@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../core/constants/firestore_paths.dart';
+
 part 'catalog.freezed.dart';
 part 'catalog.g.dart';
 
@@ -18,7 +20,15 @@ abstract class Semester with _$Semester {
     required int number,
     required String name,
     @Default(true) bool isActive,
+
+    /// Semester bundle price in paise; null = the default ₹899.
+    int? bundlePrice,
   }) = _Semester;
+
+  const Semester._();
+
+  /// What the bundle costs (paise).
+  int get effectiveBundlePrice => bundlePrice ?? AccessRules.defaultBundlePrice;
 
   factory Semester.fromJson(Map<String, dynamic> json) =>
       _$SemesterFromJson(json);

@@ -15,6 +15,9 @@ class FakeFilePickerService implements FilePickerService {
 
   @override
   Future<PickedFile?> pickImage() async => nextImage;
+
+  @override
+  Future<PickedFile?> pickPdfOrImage() async => nextPdf ?? nextImage;
 }
 
 /// Records uploads in memory.

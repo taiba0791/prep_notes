@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -12,6 +13,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/note_cover.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../data/models/access.dart';
 import '../../../data/models/note.dart';
 import '../../../data/models/recently_viewed.dart';
 import '../../../data/repositories/library_repository.dart';
@@ -19,6 +21,8 @@ import '../../auth/data/auth_repository.dart';
 import '../../purchases/data/payment_service.dart';
 import '../../purchases/presentation/checkout_screen.dart';
 import 'browse_providers.dart';
+
+final _day = DateFormat('d MMM yyyy');
 
 /// Opens the free preview: a new browser tab on web, the in-app viewer on
 /// phones.
@@ -279,7 +283,8 @@ class _BuyCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final owned = ref.watch(ownsNoteProvider(note.id)).value ?? false;
+    final access = ref.watch(noteAccessProvider(note.id)).value;
+    final owned = access?.canRead ?? false;
 
     final meta = [
       if (note.pageCount > 0) AppStrings.pages(note.pageCount),
@@ -320,7 +325,16 @@ class _BuyCard extends ConsumerWidget {
                 children: [
                   Icon(Icons.check_circle, color: context.appColors.success),
                   const SizedBox(width: 8),
-                  Text(AppStrings.youOwnThis, style: text.titleMedium),
+                  Expanded(
+                    child: Text(
+                      access!.kind == NoteAccessKind.bundle
+                          ? AppStrings.includedInBundle(
+                              _day.format(access.until!),
+                            )
+                          : accessUntilText(access.until),
+                      style: text.titleSmall,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -336,7 +350,9 @@ class _BuyCard extends ConsumerWidget {
             else if (buyInApp)
               FilledButton(
                 onPressed: () => context.push(RoutePaths.checkout(note.id)),
-                child: const Text(AppStrings.buyNow),
+                child: const Text(
+                  '${AppStrings.buyNow} · ${AppStrings.accessSixMonths}',
+                ),
               )
             else
               BuyOnWebsiteButton(noteId: note.id),

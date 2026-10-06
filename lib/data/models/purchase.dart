@@ -15,6 +15,9 @@ abstract class Purchase with _$Purchase {
     required String noteId,
     @Default('') String orderId,
     @TimestampConverter() DateTime? purchasedAt,
+
+    /// Access ends here (6 months after purchase). Missing = expired.
+    @TimestampConverter() DateTime? expiresAt,
     @Default(0) int pricePaid, // paise
     @Default('') String title,
     @Default('') String universityName,
@@ -28,6 +31,8 @@ abstract class Purchase with _$Purchase {
 
   factory Purchase.fromJson(Map<String, dynamic> json) =>
       _$PurchaseFromJson(json);
+
+  bool isActiveAt(DateTime now) => expiresAt != null && expiresAt!.isAfter(now);
 
   /// Enough of a [Note] to draw a note card.
   Note toNote() => Note(
@@ -64,10 +69,30 @@ abstract class PurchaseOrder with _$PurchaseOrder {
     String? failureReason,
     @TimestampConverter() DateTime? refundedAt,
     String? refundReason,
+    @Default('note') String type, // see OrderType
+    String? semesterId,
+    String? planKey,
   }) = _PurchaseOrder;
 
   factory PurchaseOrder.fromJson(Map<String, dynamic> json) =>
       _$PurchaseOrderFromJson(json);
+}
+
+/// What `createRoomSubscription` returns: what Razorpay Checkout needs to
+/// set up auto-renew.
+@freezed
+abstract class CheckoutSubscription with _$CheckoutSubscription {
+  const factory CheckoutSubscription({
+    required String subscriptionId,
+    required int amount, // paise per period
+    required String currency,
+    required String keyId,
+    required int months,
+    @Default('') String email,
+  }) = _CheckoutSubscription;
+
+  factory CheckoutSubscription.fromJson(Map<String, dynamic> json) =>
+      _$CheckoutSubscriptionFromJson(json);
 }
 
 /// What `createOrder` returns: everything Razorpay Checkout needs.

@@ -200,13 +200,13 @@ void main() {
 
       expect(find.text('Data Structures: Complete Notes'), findsOneWidget);
       expect(find.textContaining('120 pages · PDF · 8.0 MB'), findsOneWidget);
-      expect(find.text(AppStrings.buyNow), findsOneWidget);
+      expect(find.textContaining(AppStrings.buyNow), findsOneWidget);
       expect(find.text(AppStrings.readPreview), findsOneWidget);
       expect(find.text(AppStrings.buyToUnlock), findsNWidgets(3));
 
       expect(find.text(AppStrings.buyOnWebsite), findsNothing);
 
-      await tester.tap(find.text(AppStrings.buyNow));
+      await tester.tap(find.textContaining(AppStrings.buyNow));
       await tester.pumpAndSettle();
       expect(find.text('checkout:n1'), findsOneWidget);
     });
@@ -235,20 +235,56 @@ void main() {
       expect(find.text(AppStrings.readPreview), findsNothing);
     });
 
-    testWidgets('bought note: "You own these notes"', (tester) async {
+    testWidgets('bought note: access date + Read now', (tester) async {
       await seedCatalog();
       await addNote('n1');
       await db.doc(FirestorePaths.entitlement('u1', 'n1')).set({
         EntitlementFields.noteId: 'n1',
+        EntitlementFields.expiresAt: Timestamp.fromDate(DateTime(2099, 4, 7)),
       });
       await pump(
         tester,
         RoutePaths.note('n1'),
         session: const AuthSession(uid: 'u1'),
       );
-      expect(find.text(AppStrings.youOwnThis), findsOneWidget);
+      expect(find.text(AppStrings.accessUntil('7 Apr 2099')), findsOneWidget);
       expect(find.text(AppStrings.readNow), findsOneWidget);
-      expect(find.text(AppStrings.buyNow), findsNothing);
+      expect(find.textContaining(AppStrings.buyNow), findsNothing);
+    });
+
+    testWidgets('expired purchase: Buy now again', (tester) async {
+      await seedCatalog();
+      await addNote('n1');
+      await db.doc(FirestorePaths.entitlement('u1', 'n1')).set({
+        EntitlementFields.expiresAt: Timestamp.fromDate(DateTime(2020)),
+      });
+      await pump(
+        tester,
+        RoutePaths.note('n1'),
+        session: const AuthSession(uid: 'u1'),
+      );
+      expect(find.textContaining(AppStrings.buyNow), findsOneWidget);
+      expect(find.text(AppStrings.readNow), findsNothing);
+    });
+
+    testWidgets('semester bundle: note is included, bundle card on semester', (
+      tester,
+    ) async {
+      await seedCatalog();
+      await addNote('n1');
+      await db.doc(FirestorePaths.bundle('u1', 's3')).set({
+        BundleFields.expiresAt: Timestamp.fromDate(DateTime(2099, 4, 7)),
+      });
+      await pump(
+        tester,
+        RoutePaths.note('n1'),
+        session: const AuthSession(uid: 'u1'),
+      );
+      expect(
+        find.text(AppStrings.includedInBundle('7 Apr 2099')),
+        findsOneWidget,
+      );
+      expect(find.text(AppStrings.readNow), findsOneWidget);
     });
 
     testWidgets('signed-in visits are recorded in Recently viewed', (

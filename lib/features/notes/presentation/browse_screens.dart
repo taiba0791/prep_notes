@@ -10,6 +10,7 @@ import '../../../core/widgets/catalog_widgets.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/theme_mode_button.dart';
 import '../../../data/models/note_query.dart';
+import '../../purchases/presentation/bundle_card.dart';
 import 'browse_providers.dart';
 
 /// Shared page frame for browse screens: app bar on phones, scrollable body.
@@ -214,6 +215,8 @@ class SemesterScreen extends ConsumerWidget {
             ),
             Text(s.name, style: text.headlineLarge),
             if (uni != null) Text(uni.name, style: text.bodyLarge),
+            const SizedBox(height: 20),
+            SemesterBundleCard(semester: s),
             const SizedBox(height: 28),
             Text(AppStrings.subjectsTitle, style: text.titleLarge),
             const SizedBox(height: 12),

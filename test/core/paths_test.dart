@@ -17,7 +17,7 @@ void main() {
     expect(StoragePaths.notePdf('n1'), 'notes_private/n1/file.pdf');
     expect(StoragePaths.noteThumbnail('n1'), 'notes_public/n1/thumbnail.jpg');
     expect(StoragePaths.notePreview('n1'), 'notes_public/n1/preview.pdf');
-    expect(StoragePaths.resourceFile('r1', 'a.pdf'), 'resources/r1/a.pdf');
+    expect(StoragePaths.roomFile('u1', 'i1', 'a.pdf'), 'room/u1/i1/a.pdf');
     expect(StoragePaths.avatar('u1'), 'avatars/u1/avatar.jpg');
   });
 }

@@ -8,13 +8,17 @@ part 'file_picker_service.g.dart';
 /// A file chosen by the admin, read into memory.
 typedef PickedFile = ({String name, Uint8List bytes, String contentType});
 
-/// Choosing PDFs / images (admin uploads). Wrapped so tests can fake it.
+/// Choosing PDFs / images (admin and Resource Room uploads). Wrapped so
+/// tests can fake it.
 abstract interface class FilePickerService {
   /// Returns null if the user cancelled.
   Future<PickedFile?> pickPdf();
 
   /// JPG / PNG / WEBP. Returns null if the user cancelled.
   Future<PickedFile?> pickImage();
+
+  /// A PDF or a photo (Resource Room uploads). Null if cancelled.
+  Future<PickedFile?> pickPdfOrImage();
 }
 
 class PlatformFilePickerService implements FilePickerService {
@@ -34,6 +38,13 @@ class PlatformFilePickerService implements FilePickerService {
   Future<PickedFile?> pickImage() => _pick(
     _imageTypes.keys.toList(),
     (ext) => _imageTypes[ext] ?? 'image/jpeg',
+  );
+
+  @override
+  Future<PickedFile?> pickPdfOrImage() => _pick(
+    ['pdf', ..._imageTypes.keys],
+    (ext) =>
+        ext == 'pdf' ? 'application/pdf' : _imageTypes[ext] ?? 'image/jpeg',
   );
 
   Future<PickedFile?> _pick(

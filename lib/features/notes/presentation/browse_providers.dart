@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/errors/error_reporter.dart';
+import '../../../data/models/access.dart';
 import '../../../data/models/catalog.dart';
 import '../../../data/models/note.dart';
 import '../../../data/models/note_query.dart';
@@ -30,6 +31,10 @@ Future<List<University>> browseUniversities(Ref ref) async => [
   for (final u in await ref.watch(catalogRepositoryProvider).universities())
     if (u.isActive) u,
 ];
+
+@riverpod
+Future<int> semesterNoteCount(Ref ref, String semesterId) =>
+    ref.watch(browseRepositoryProvider).semesterNoteCount(semesterId);
 
 // ── Catalog levels ─────────────────────────────────────────
 
@@ -147,12 +152,16 @@ Future<List<Note>> relatedNotes(Ref ref, String noteId) async {
 Future<String?> previewUrl(Ref ref, String noteId) =>
     ref.watch(browseRepositoryProvider).previewUrl(noteId);
 
-/// True if the signed-in user bought this note. Guests: false.
+/// Can the signed-in user read this note now (bought within 6 months, or
+/// in an active semester bundle)? Guests: no.
 @riverpod
-Future<bool> ownsNote(Ref ref, String noteId) async {
+Future<NoteAccess> noteAccess(Ref ref, String noteId) async {
   final uid = ref.watch(authSessionProvider.select((s) => s.value?.uid));
-  if (uid == null) return false;
-  return ref.watch(libraryRepositoryProvider).ownsNote(uid, noteId);
+  if (uid == null) return NoteAccess.none;
+  final note = await ref.watch(noteDetailsProvider(noteId).future);
+  return ref
+      .watch(libraryRepositoryProvider)
+      .noteAccess(uid, noteId, semesterId: note?.semesterId ?? '');
 }
 
 // ── Search ─────────────────────────────────────────────────

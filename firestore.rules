@@ -27,6 +27,14 @@ service cloud.firestore {
       return !(field in data) || (data[field] is string && data[field].size() <= max);
     }
 
+    // Resource Room open? users/{uid}.roomAccessUntil is set ONLY by Cloud
+    // Functions (latest end of an active semester bundle / Room subscription).
+    function roomOpen(uid) {
+      let until = get(/databases/$(database)/documents/users/$(uid)).data
+        .get('roomAccessUntil', null);
+      return until != null && until > request.time;
+    }
+
     // ───────────────────────── users ─────────────────────────
 
     match /users/{uid} {
@@ -86,6 +94,49 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Semester bundles: written ONLY by Cloud Functions after payment.
+      match /bundles/{semesterId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if false;
+      }
+
+      // Resource Room: the student's private locker (Drive / YouTube links
+      // and their own files). Only while their Room access is active.
+      match /roomItems/{itemId} {
+        allow read: if isOwner(uid) && roomOpen(uid);
+        allow delete: if isOwner(uid);
+        allow create: if isOwner(uid) && roomOpen(uid) && isValidRoomItem(itemId);
+        allow update: if isOwner(uid) && roomOpen(uid)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['title', 'searchKeywords'])
+          && isText(request.resource.data.title, 1, 200)
+          && request.resource.data.searchKeywords is list
+          && request.resource.data.searchKeywords.size() <= 100;
+      }
+
+      function isValidRoomItem(itemId) {
+        let d = request.resource.data;
+        return d.keys().hasOnly([
+            'type', 'title', 'url', 'storagePath', 'fileName', 'contentType',
+            'sizeBytes', 'createdAt', 'searchKeywords'])
+          && isText(d.title, 1, 200)
+          && d.createdAt == request.time
+          && d.searchKeywords is list && d.searchKeywords.size() <= 100
+          && ((d.type in ['drive', 'youtube']
+                && isText(d.url, 10, 2000)
+                && (d.type != 'drive'
+                    || d.url.matches('^https://(drive|docs)[.]google[.]com/.*'))
+                && (d.type != 'youtube'
+                    || d.url.matches('^https://(www[.]|m[.])?(youtube[.]com|youtu[.]be)/.*'))
+                && !('storagePath' in d))
+              || (d.type == 'file'
+                && isText(d.fileName, 1, 200)
+                && d.storagePath == 'room/' + uid + '/' + itemId + '/' + d.fileName
+                && d.contentType in ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+                && d.sizeBytes is int && d.sizeBytes > 0 && d.sizeBytes <= 26214400
+                && !('url' in d)));
+      }
+
       // "Recently viewed": the owner keeps a small copy of notes they opened
       // (the app trims it to the newest 20).
       match /recentlyViewed/{noteId} {
@@ -126,6 +177,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ─────────────────── Room subscriptions + plans ───────────────────
+
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+
+    // Public settings, e.g. config/roomPlans (prices). Written by Functions.
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // fileAccessLogs, rateLimits: server-only (no match = denied).
 
     // ───────────────────────── catalog ─────────────────────────
@@ -158,7 +223,12 @@ service cloud.firestore {
     match /semesters/{semesterId} {
       allow read: if true;
       allow create, update: if isAdmin()
-        && request.resource.data.keys().hasOnly(['universityId', 'number', 'name', 'isActive'])
+        && request.resource.data.keys().hasOnly(['universityId', 'number', 'name', 'isActive', 'bundlePrice'])
+        // Semester bundle price in paise (₹1 – ₹1,00,000); missing = ₹899.
+        && (!('bundlePrice' in request.resource.data)
+            || (request.resource.data.bundlePrice is int
+                && request.resource.data.bundlePrice >= 100
+                && request.resource.data.bundlePrice <= 10000000))
         && isText(request.resource.data.universityId, 1, 128)
         && request.resource.data.number is int
         && request.resource.data.number >= 1 && request.resource.data.number <= 12

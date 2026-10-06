@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/services/file_picker_service.dart';
+import '../../../core/utils/money.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/models/catalog.dart';
 import '../../../data/models/university.dart';
@@ -401,11 +402,17 @@ class _SemesterDialogState extends ConsumerState<_SemesterDialog> {
     text: widget.existing?.name ?? AppStrings.semesterLabel(_number),
   );
   late bool _active = widget.existing?.isActive ?? true;
+  late final _bundlePrice = TextEditingController(
+    text: widget.existing?.bundlePrice == null
+        ? ''
+        : Money.toRupeesText(widget.existing!.bundlePrice!),
+  );
   bool _saving = false;
 
   @override
   void dispose() {
     _name.dispose();
+    _bundlePrice.dispose();
     super.dispose();
   }
 
@@ -423,6 +430,9 @@ class _SemesterDialogState extends ConsumerState<_SemesterDialog> {
               number: _number,
               name: _name.text.trim(),
               isActive: _active,
+              bundlePrice: _bundlePrice.text.trim().isEmpty
+                  ? null
+                  : Money.parseRupees(_bundlePrice.text),
             ),
           ),
     );
@@ -460,6 +470,22 @@ class _SemesterDialogState extends ConsumerState<_SemesterDialog> {
           controller: _name,
           decoration: const InputDecoration(labelText: AppStrings.fieldName),
           validator: requiredText,
+        ),
+        TextFormField(
+          controller: _bundlePrice,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: AppStrings.bundlePriceLabel,
+            helperText: AppStrings.bundlePriceHelp,
+            hintText: '899',
+          ),
+          validator: (v) {
+            if ((v ?? '').trim().isEmpty) return null;
+            final p = Money.parseRupees(v!);
+            return p == null || p < 100 || p > 10000000
+                ? AppStrings.priceInvalid
+                : null;
+          },
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,

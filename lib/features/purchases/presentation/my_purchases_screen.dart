@@ -11,7 +11,10 @@ import '../../../core/utils/money.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/note_cover.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../data/models/access.dart';
 import '../../../data/models/purchase.dart';
+import '../../../data/repositories/purchases_repository.dart';
+import '../domain/purchase_failure.dart';
 import 'purchases_controllers.dart';
 
 final _date = DateFormat('d MMM yyyy');
@@ -23,18 +26,21 @@ class MyPurchasesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(AppStrings.pagePurchases),
           bottom: const TabBar(
             tabs: [
               Tab(text: AppStrings.purchasesNotesTab),
+              Tab(text: AppStrings.purchasesBundlesTab),
               Tab(text: AppStrings.purchasesOrdersTab),
             ],
           ),
         ),
-        body: const TabBarView(children: [_NotesTab(), _OrdersTab()]),
+        body: const TabBarView(
+          children: [_NotesTab(), _BundlesTab(), _OrdersTab()],
+        ),
       ),
     );
   }
@@ -156,16 +162,26 @@ class _PurchaseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final p = purchase;
+    final active = p.isActiveAt(DateTime.now());
     final sub = [
       if (p.subjectName.isNotEmpty) p.subjectName,
       if (p.universityName.isNotEmpty) p.universityName,
-      if (p.purchasedAt != null)
-        AppStrings.purchasedOn(_date.format(p.purchasedAt!)),
+      if (active)
+        AppStrings.accessUntil(_date.format(p.expiresAt!))
+      else if (p.expiresAt != null)
+        AppStrings.expiredOn(_date.format(p.expiresAt!))
+      else
+        AppStrings.expired,
     ].join(' · ');
-    final read = FilledButton(
-      onPressed: () => context.push(RoutePaths.noteViewer(p.noteId)),
-      child: const Text(AppStrings.readNow),
-    );
+    final read = active
+        ? FilledButton(
+            onPressed: () => context.push(RoutePaths.noteViewer(p.noteId)),
+            child: const Text(AppStrings.readNow),
+          )
+        : OutlinedButton(
+            onPressed: () => context.go(RoutePaths.note(p.noteId)),
+            child: const Text(AppStrings.buyAgain),
+          );
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -275,6 +291,11 @@ class _OrderTile extends StatelessWidget {
         ),
         subtitle: SelectableText(
           [
+            switch (order.type) {
+              OrderType.bundle => AppStrings.orderTypeBundle,
+              OrderType.subscription => AppStrings.orderTypeSubscription,
+              _ => AppStrings.orderTypeNote,
+            },
             AppStrings.orderIdLabel(order.id),
             if (when != null) _date.format(when),
             if (order.failureReason != null) order.failureReason!,
@@ -296,6 +317,149 @@ class _OrderTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Semester bundles + the Resource Room subscription (with cancel).
+class _BundlesTab extends ConsumerWidget {
+  const _BundlesTab();
+
+  Future<void> _cancel(
+    BuildContext context,
+    WidgetRef ref,
+    RoomSubscription sub,
+  ) async {
+    final until = sub.currentEnd == null ? '' : _date.format(sub.currentEnd!);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppStrings.cancelAutoRenewTitle),
+        content: Text(AppStrings.cancelAutoRenewMessage(until)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(AppStrings.keepSubscription),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(AppStrings.cancelAutoRenew),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(purchasesRepositoryProvider).cancelRoomSubscription();
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppStrings.autoRenewCancelled)),
+      );
+    } on PurchaseException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.failure.message)));
+    }
+    refreshAccess(ref.invalidate);
+  }
+
+  static int _months(String key) =>
+      RoomPlan.defaults.where((p) => p.key == key).firstOrNull?.months ?? 1;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    final bundles = ref.watch(myBundlesProvider);
+    final sub = ref.watch(roomSubscriptionProvider);
+    final now = DateTime.now();
+
+    if (bundles.isLoading || sub.isLoading) return const LoadingView();
+    if (bundles.hasError || sub.hasError) {
+      return ErrorView(
+        onRetry: () => ref
+          ..invalidate(myBundlesProvider)
+          ..invalidate(roomSubscriptionProvider),
+      );
+    }
+    final list = bundles.value ?? const <SemesterBundle>[];
+    final s = sub.value;
+    final showSub = s != null && (s.renews || s.isPaidAt(now));
+    if (list.isEmpty && !showSub) {
+      return EmptyView(
+        icon: Icons.library_books_outlined,
+        title: AppStrings.noBundlesTitle,
+        message: AppStrings.noBundlesMessage,
+        action: FilledButton(
+          onPressed: () => context.go(RoutePaths.notes),
+          child: const Text(AppStrings.seeBundles),
+        ),
+      );
+    }
+    return _Column(
+      children: [
+        if (showSub)
+          Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    AppStrings.roomSubscriptionTitle,
+                    style: text.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${Money.format(s.amount)} '
+                    '${AppStrings.perMonths(_months(s.planKey))}',
+                    style: text.bodyMedium,
+                  ),
+                  if (s.currentEnd != null)
+                    Text(
+                      s.renews
+                          ? AppStrings.renewsOn(_date.format(s.currentEnd!))
+                          : AppStrings.endsOn(_date.format(s.currentEnd!)),
+                      style: text.bodySmall,
+                    ),
+                  if (s.status == 'pending')
+                    Text(AppStrings.subscriptionPending, style: text.bodySmall),
+                  if (s.renews) ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton(
+                        onPressed: () => _cancel(context, ref, s),
+                        child: const Text(AppStrings.cancelAutoRenew),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        for (final b in list)
+          Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 8,
+              ),
+              leading: const Icon(Icons.library_books_outlined),
+              title: Text(AppStrings.semesterBundleName(b.semesterNumber)),
+              subtitle: Text(
+                [
+                  if (b.universityName.isNotEmpty) b.universityName,
+                  if (b.isActiveAt(now))
+                    AppStrings.accessUntil(_date.format(b.expiresAt!))
+                  else if (b.expiresAt != null)
+                    AppStrings.expiredOn(_date.format(b.expiresAt!)),
+                ].join(' · '),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go(RoutePaths.semester(b.semesterId)),
+            ),
+          ),
+      ],
     );
   }
 }
