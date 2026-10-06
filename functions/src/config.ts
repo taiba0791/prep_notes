@@ -28,6 +28,7 @@ export const Collections = {
   stats: "stats",
   fileAccessLogs: "fileAccessLogs",
   rateLimits: "rateLimits",
+  statsDaily: "stats_daily",
 } as const;
 
 export const STATS_GLOBAL = "stats/global";
@@ -44,6 +45,9 @@ export const OrderFields = {
   createdAt: "createdAt",
   paidAt: "paidAt",
   failureReason: "failureReason",
+  refundedAt: "refundedAt",
+  refundedBy: "refundedBy",
+  refundReason: "refundReason",
   userDeleted: "userDeleted",
   userDeletedAt: "userDeletedAt",
 } as const;
@@ -70,8 +74,19 @@ export const EntitlementFields = {
 } as const;
 
 export const StatsFields = {
+  totalStudents: "totalStudents",
+  totalNotes: "totalNotes", // published
   totalPurchases: "totalPurchases",
   totalRevenue: "totalRevenue", // paise
+  updatedAt: "updatedAt",
+} as const;
+
+/** stats_daily/{yyyy-MM-dd} (India time): sales of one day. */
+export const DailyFields = {
+  date: "date",
+  purchases: "purchases",
+  revenue: "revenue", // paise, refunds subtracted on the refund day
+  refunds: "refunds",
 } as const;
 
 export const CURRENCY_INR = "INR";
@@ -113,8 +128,12 @@ export const NoteFields = {
 } as const;
 
 export const UserFields = {
+  name: "name",
+  nameLower: "nameLower", // server-maintained, for admin search
   role: "role",
   email: "email",
+  disabled: "disabled", // server-maintained mirror of the Auth flag
+  createdAt: "createdAt",
 } as const;
 
 export const UserRole = {

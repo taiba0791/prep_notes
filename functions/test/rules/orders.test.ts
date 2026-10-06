@@ -81,6 +81,24 @@ describe("entitlements", () => {
   });
 });
 
+describe("stats (Phase 5)", () => {
+  beforeEach(async () => {
+    await t.seed("stats_daily/2026-10-06", { revenue: 4900 });
+  });
+
+  it("admins read the dashboard numbers; students can't", async () => {
+    await assertSucceeds(t.admin().firestore().doc("stats/global").get());
+    await assertSucceeds(t.admin().firestore().collection("stats_daily").get());
+    await assertFails(t.student("alice").firestore().doc("stats_daily/2026-10-06").get());
+    await assertFails(t.guest().firestore().doc("stats/global").get());
+  });
+
+  it("nobody writes them from the app, not even admins", async () => {
+    await assertFails(t.admin().firestore().doc("stats/global").set({ totalRevenue: 1 }));
+    await assertFails(t.admin().firestore().doc("stats_daily/2026-10-06").update({ revenue: 1 }));
+  });
+});
+
 describe("server-only collections", () => {
   for (const path of ["stats/global", "fileAccessLogs/l1", "rateLimits/alice_createOrder"]) {
     it(`${path}: no client reads or writes`, async () => {

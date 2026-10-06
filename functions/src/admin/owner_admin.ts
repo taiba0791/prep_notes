@@ -13,6 +13,7 @@ import { getAuth } from "firebase-admin/auth";
 import * as logger from "firebase-functions/logger";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { OWNER_EMAILS, UserFields } from "../config";
+import { onUserWritten } from "../stats/stats_triggers";
 import { setAdmin } from "./admin_claims";
 
 const normalise = (email: unknown) =>
@@ -45,10 +46,13 @@ export async function grantAdminIfOwner(
   return true;
 }
 
+/** Also counts students and keeps the search name (stats_triggers.ts). */
 export const onUserProfileWritten = onDocumentWritten(
   "users/{uid}",
   async (event) => {
+    const before = event.data?.before;
     const after = event.data?.after;
+    await onUserWritten(event.params.uid, before, after);
     if (!after?.exists) return; // deleted
     await grantAdminIfOwner(event.params.uid, after.get(UserFields.email));
   },

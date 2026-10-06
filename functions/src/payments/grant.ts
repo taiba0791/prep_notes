@@ -16,9 +16,9 @@ import {
   NoteFields,
   OrderFields,
   OrderStatus,
-  STATS_GLOBAL,
   StatsFields,
 } from "../config";
+import { bumpDaily, bumpGlobal } from "../stats/stats";
 
 export type GrantResult =
   | { status: "granted"; noteIds: string[] }
@@ -101,14 +101,11 @@ export async function grantOrder(
       [OrderFields.paidAt]: FieldValue.serverTimestamp(),
       [OrderFields.failureReason]: FieldValue.delete(),
     });
-    tx.set(
-      db.doc(STATS_GLOBAL),
-      {
-        [StatsFields.totalPurchases]: FieldValue.increment(newlyOwned),
-        [StatsFields.totalRevenue]: FieldValue.increment(amount),
-      },
-      { merge: true },
-    );
+    bumpGlobal(tx, {
+      [StatsFields.totalPurchases]: newlyOwned,
+      [StatsFields.totalRevenue]: amount,
+    });
+    bumpDaily(tx, { purchases: newlyOwned, revenue: amount });
     logger.info("Order paid", { orderId, uid, noteIds, amount });
     return { status: "granted", noteIds };
   });

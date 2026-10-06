@@ -7,6 +7,8 @@ import '../../features/admin/presentation/admin_dashboard_page.dart';
 import '../../features/admin/presentation/admin_scaffold.dart';
 import '../../features/admin/presentation/catalog_pages.dart';
 import '../../features/admin/presentation/notes_admin_pages.dart';
+import '../../features/admin/presentation/orders_admin_pages.dart';
+import '../../features/admin/presentation/users_admin_pages.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/auth_session.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
@@ -255,15 +257,28 @@ GoRouter appRouter(Ref ref) {
                   ),
                 ],
               ),
-              _page(
-                'users',
-                AppStrings.pageAdminUsers,
-                routes: [_page(':uid', AppStrings.pageAdminUser)],
+              GoRoute(
+                path: 'users',
+                builder: (context, state) => const AdminUsersPage(),
+                routes: [
+                  GoRoute(
+                    path: ':uid',
+                    builder: (context, state) =>
+                        AdminUserPage(uid: state.pathParameters['uid']!),
+                  ),
+                ],
               ),
-              _page(
-                'orders',
-                AppStrings.pageAdminOrders,
-                routes: [_page(':orderId', AppStrings.pageAdminOrder)],
+              GoRoute(
+                path: 'orders',
+                builder: (context, state) => const AdminOrdersPage(),
+                routes: [
+                  GoRoute(
+                    path: ':orderId',
+                    builder: (context, state) => AdminOrderPage(
+                      orderId: state.pathParameters['orderId']!,
+                    ),
+                  ),
+                ],
               ),
               _page('resources', AppStrings.pageAdminResources),
               _page('student-voice', AppStrings.pageAdminStudentVoice),
